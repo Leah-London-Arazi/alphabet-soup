@@ -21,7 +21,7 @@ from textattack.goal_functions import ClassificationGoalFunction
 
 
 class IncreaseConfidence(ClassificationGoalFunction):
-    def __init__(self, *args, eps=0.2, **kwargs):
+    def __init__(self, *args, eps=0.01, **kwargs):
         super().__init__(*args, **kwargs)
         self.eps = eps
 
