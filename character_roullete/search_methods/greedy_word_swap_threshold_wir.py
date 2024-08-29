@@ -1,0 +1,42 @@
+"""
+Reimplementation of Greedy Word Swap with Word Importance Ranking
+"""
+
+from textattack.search_methods import GreedyWordSwapWIR
+
+
+class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
+    def __init__(self, wir_method="unk", unk_token="[UNK]", swap_threshold=0.0, debug=False):
+        super().__init__(wir_method=wir_method, unk_token=unk_token)
+        self.swap_threshold = swap_threshold
+        self.debug = debug
+
+    def perform_search(self, initial_result):
+        attacked_text = initial_result.attacked_text
+        index_order, search_over = self._get_index_order(attacked_text)
+        cur_result = initial_result
+
+        i = 0
+
+        while i < len(index_order) and not search_over:
+            transformed_text_candidates = self.get_transformations(
+                cur_result.attacked_text,
+                original_text=initial_result.attacked_text,
+                indices_to_modify=[index_order[i]],
+            )
+            i += 1
+            if len(transformed_text_candidates) == 0:
+                continue
+
+            results, search_over = self.get_goal_results(transformed_text_candidates)
+            results = sorted(results, key=lambda x: -x.score)
+
+            if results[0].score > cur_result.score - self.swap_threshold:
+                cur_result = results[0]
+            else:
+                continue
+
+        if self.debug:
+            print(f"cur_result: {cur_result}")
+
+        return cur_result
