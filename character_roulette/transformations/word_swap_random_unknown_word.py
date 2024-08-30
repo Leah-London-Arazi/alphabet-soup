@@ -4,7 +4,6 @@ Word Swap by Random Character Substitution
 """
 
 from textattack.transformations.word_swaps import WordSwap
-from textattack.models.wrappers import ModelWrapper
 import random
 import string
 class WordSwapRandomUnknownWord(WordSwap):
