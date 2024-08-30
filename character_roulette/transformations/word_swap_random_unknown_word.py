@@ -8,12 +8,8 @@ from textattack.models.wrappers import ModelWrapper
 import random
 import string
 class WordSwapRandomUnknownWord(WordSwap):
-    def __init__(self, model_wrapper, num_random_words=10, min_length=3, max_length=10, **kwargs):
+    def __init__(self, num_random_words=10, min_length=3, max_length=10, **kwargs):
         super().__init__(**kwargs)
-        if not isinstance(model_wrapper, ModelWrapper):
-            raise TypeError(f"Got invalid model wrapper type {type(model_wrapper)}")
-        self.model_wrapper = model_wrapper
-
         self.min_length = min_length
         self.max_length = max_length
         self.num_random_words = num_random_words
