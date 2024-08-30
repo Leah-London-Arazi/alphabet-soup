@@ -20,6 +20,9 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
 
         i = 0
 
+        if self.debug:
+            print(f"initial_result: {cur_result}")
+
         while i < len(index_order) and not search_over:
             for _ in range(self.num_transformation_per_word):
                 transformed_text_candidates = self.get_transformations(
