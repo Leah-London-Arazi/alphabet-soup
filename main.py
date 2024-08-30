@@ -32,7 +32,7 @@ def character_roulette_random_char(model_name):
     input_text = "The movie was filmed somewhere at some time."
     label = 1  # Positive
     attack_result = attack.attack(input_text, label)
-    print(attack_result.perturbed_result)
+    print(attack_result)
 
 def character_roulette_random_word(model_name):
     model_wrapper = get_model_wrapper(model_name)
@@ -48,7 +48,6 @@ def character_roulette_random_word(model_name):
     label = 1  # Positive
     attack_result = attack.attack(input_text, label)
     print(attack_result)
-    print(attack_result.perturbed_result)
 
 
 if __name__ == '__main__':
