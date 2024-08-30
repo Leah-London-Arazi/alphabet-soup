@@ -4,18 +4,35 @@ Word Swap by Gradient
 """
 
 import torch
-from textattack.shared import utils
 from textattack.transformations.word_swaps.word_swap_gradient_based import WordSwapGradientBased
-
+from textattack.models.wrappers import ModelWrapper
 
 
 class WordSwapRandomGradientBased(WordSwapGradientBased):
+    def __init__(self, model_wrapper, top_n=1):
+        # Unwrap model wrappers. Need raw model for gradient.
+        self.model = model_wrapper.model
+        self.model_wrapper = model_wrapper
+        self.tokenizer = self.model_wrapper.tokenizer
+        # Make sure this model has all of the required properties.
+        if not hasattr(self.model, "get_input_embeddings"):
+            raise ValueError(
+                "Model needs word embedding matrix for gradient-based word swap"
+            )
+        if not hasattr(self.tokenizer, "pad_token_id") and self.tokenizer.pad_token_id:
+            raise ValueError(
+                "Tokenizer needs to have `pad_token_id` for gradient-based word swap"
+            )
+
+        self.top_n = top_n
+        self.is_black_box = False
+
     def _get_replacement_words_by_grad(self, attacked_text, indices_to_replace):
         lookup_table = self.model.get_input_embeddings().weight.data.cpu()
 
         grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
         emb_grad = torch.tensor(grad_output["gradient"])
-        text_ids = grad_output["ids"]
+        text_ids = grad_output["ids"].squeeze()
         # grad differences between all flips and original word (eq. 1 from paper)
         vocab_size = lookup_table.size(0)
         diffs = torch.zeros(len(indices_to_replace), vocab_size)
@@ -42,10 +59,7 @@ class WordSwapRandomGradientBased(WordSwapGradientBased):
             idx_in_diffs = idx // num_words_in_vocab
             idx_in_vocab = idx % (num_words_in_vocab)
             idx_in_sentence = indices_to_replace[idx_in_diffs]
-            word = self.tokenizer.convert_id_to_word(idx_in_vocab)
-            if (not utils.has_letter(word)) or (len(utils.words_from_text(word)) != 1):
-                # Do not consider words that are solely letters or punctuation.
-                continue
+            word = self.tokenizer._convert_id_to_word(idx_in_vocab)
             candidates.append((word, idx_in_sentence))
             if len(candidates) == self.top_n:
                 break
