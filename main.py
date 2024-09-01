@@ -3,23 +3,31 @@ import transformers
 from textattack.transformations import WordSwapRandomCharacterSubstitution, WordSwapRandomCharacterDeletion, \
     WordSwapRandomCharacterInsertion
 
-from transformations.word_swap_random_gradient_based import WordSwapRandomGradientBased
+from transformations.word_swap_random_gradient_based import WordSwapTokenGradientBased
 from transformations.word_swap_random_unknown_word import WordSwapRandomUnknownWord
 from textattack.transformations.composite_transformation import CompositeTransformation
 from textattack.search_methods import BeamSearch
 from goal_functions.increase_confidence import IncreaseConfidence
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
 
+
 def get_model_wrapper(model_name):
     model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
     return textattack.models.wrappers.HuggingFaceModelWrapper(model, tokenizer)
 
-def get_lstm_pytorch_model_wrapper(model_name):
-    model = textattack.models.helpers.LSTMForClassification.from_pretrained(model_name)
-    return textattack.models.wrappers.PyTorchModelWrapper(
-        model, model.tokenizer
-    )
+
+def print_perturbed_result(perturbed_result):
+    print(f"perturbed text: '{perturbed_result.attacked_text.text}'.")
+    print(f"classified as {perturbed_result.output} with score of {perturbed_result.score}.")
+    print(f"used {perturbed_result.num_queries} queries.")
+
+
+def run_attack(attack, input_text="The movie was filmed somewhere at some time.", label=1):
+    attack_result = attack.attack(input_text, label)
+    perturbed_result = attack_result.perturbed_result
+    print_perturbed_result(perturbed_result)
+
 
 def character_roulette_black_box__random_char(model_name):
     model_wrapper = get_model_wrapper(model_name)
@@ -34,17 +42,17 @@ def character_roulette_black_box__random_char(model_name):
             WordSwapRandomCharacterInsertion(),
         ]
     )
-
     search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=3)
+
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
-    input_text = "The movie was filmed somewhere at some time."
-    label = 1  # Positive
-    attack_result = attack.attack(input_text, label)
-    print(attack_result)
+
+    run_attack(attack=attack)
+
 
 def character_roulette_black_box__random_word(model_name):
     model_wrapper = get_model_wrapper(model_name)
+
     # Construct our four components for `Attack`
     goal_function = IncreaseConfidence(model_wrapper)
     constraints = []
@@ -53,27 +61,25 @@ def character_roulette_black_box__random_word(model_name):
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
-    input_text = "The movie was filmed somewhere at some time."
-    label = 1  # Positive
-    attack_result = attack.attack(input_text, label)
-    print(attack_result)
+
+    run_attack(attack=attack)
+
 
 def character_roulette_white_box(model_name):
-    model_wrapper = get_lstm_pytorch_model_wrapper(model_name)
+    model_wrapper = get_model_wrapper(model_name)
+
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidence(model_wrapper)
+    goal_function = IncreaseConfidence(model_wrapper, query_budget=10, eps=0.1)
     constraints = []
-    transformation = WordSwapRandomGradientBased(model_wrapper, top_n=1)
-    search_method = BeamSearch(beam_width=10)
+    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=8)
+    search_method = BeamSearch(beam_width=2)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
-    input_text = "The movie was filmed somewhere at some time."
-    label = 1  # Positive
-    attack_result = attack.attack(input_text, label)
-    print(attack_result)
+
+    run_attack(attack=attack, input_text="dknjks d,ddkls the alkdla.")
 
 
 if __name__ == '__main__':
     character_roulette_black_box__random_char("mnoukhov/gpt2-imdb-sentiment-classifier")
-    character_roulette_white_box(r"models_v2/classification/lstm/mr")
+    character_roulette_white_box(r"mnoukhov/gpt2-imdb-sentiment-classifier")
