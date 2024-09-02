@@ -51,9 +51,9 @@ class WordSwapTokenGradientBased(WordSwap):
 
         candidates = []
         for idx in token_idxs_sorted_by_grad.tolist():
-            token_idx = idx // diffs.shape[0]
+            orig_token_idx = idx // diffs.shape[1]
             new_token_id = random_token_idxes[idx % diffs.shape[1]]
-            idx_in_tokenized_sentence = tokens_indices_to_replace[token_idx]
+            idx_in_tokenized_sentence = tokens_indices_to_replace[orig_token_idx]
             candidates.append((new_token_id, idx_in_tokenized_sentence))
             if len(candidates) == self.top_n:
                 break
