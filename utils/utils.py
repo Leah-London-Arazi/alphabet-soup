@@ -1,5 +1,7 @@
 import transformers
 from textattack.models.wrappers import HuggingFaceModelWrapper 
+import random
+import string
 
 def get_model_wrapper(model_name):
     model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -18,4 +20,7 @@ def run_attack(attack, input_text="The movie was filmed somewhere at some time."
     perturbed_result = attack_result.perturbed_result
     print_perturbed_result(perturbed_result)
 
-
+def random_word(min_len=3, max_len=10):
+    length = random.randint(min_len, max_len)  # Random word length
+    word = ''.join(random.choices(string.printable, k=length))  # Generate a word
+    return word
