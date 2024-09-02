@@ -42,9 +42,9 @@ class WordSwapTokenGradientBased(WordSwap):
         random_token_idxes = np.random.randint(lookup_table.shape[0]-1, size=self.num_random_tokens)
 
         for j, token_idx in enumerate(tokens_indices_to_replace):
-            b_grads = lookup_table.mv(emb_grad[token_idx]).squeeze()
-            a_grad = b_grads[text_ids[token_idx]]
-            diffs[j] = b_grads[random_token_idxes] - a_grad
+            b_grads = lookup_table[random_token_idxes] @ emb_grad[token_idx]
+            a_grad = lookup_table[text_ids[token_idx]] @ emb_grad[token_idx]
+            diffs[j] = b_grads - a_grad
 
         # Find best indices within 2-d tensor by flattening.
         token_idxs_sorted_by_grad = (-diffs).flatten().argsort()
