@@ -72,12 +72,8 @@ class WordSwapTokenGradientBased(WordSwap):
         return tokens_indices_to_replace
 
     def _get_transformations(self, attacked_text, indices_to_replace):
-        """Returns a list of all possible transformations for `text`.
-
-        If indices_to_replace is set, only replaces words at those
-        indices.
-        """
-        transformations = []
+        # add the attacked text to transformations in case all transformations reduced accuracy
+        transformations = [attacked_text]
         for token, idx_in_tokenized_sentence in self._get_replacement_words_by_grad(
             attacked_text, indices_to_replace
         ):
