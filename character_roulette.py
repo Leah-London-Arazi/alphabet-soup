@@ -50,10 +50,10 @@ def character_roulette_white_box(model_name):
     model_wrapper = get_model_wrapper(model_name)
 
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidence(model_wrapper, query_budget=10, eps=0.1)
+    goal_function = IncreaseConfidence(model_wrapper, query_budget=30, eps=0.1)
     constraints = []
-    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=200)
-    search_method = BeamSearch(beam_width=2)
+    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=50)
+    search_method = BeamSearch(beam_width=5)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
