@@ -52,7 +52,7 @@ def character_roulette_white_box(model_name):
     # Construct our four components for `Attack`
     goal_function = IncreaseConfidence(model_wrapper, query_budget=10, eps=0.1)
     constraints = []
-    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=8)
+    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=200)
     search_method = BeamSearch(beam_width=2)
 
     # Construct the actual attack
