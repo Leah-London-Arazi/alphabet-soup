@@ -1,6 +1,6 @@
 import torch
 import textattack
-from search_methods.pez_search_method import PEZGradientSearch
+from search_methods.pez_gradient_search import PEZGradientSearch
 from transformations.nop import NOP
 from goal_functions.increase_confidence import IncreaseConfidence
 from utils.utils import get_model_wrapper, run_attack
