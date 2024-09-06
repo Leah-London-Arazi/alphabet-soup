@@ -19,10 +19,6 @@ class WordSwapTokenGradientBased(WordSwap):
             raise ValueError(
                 "Model needs word embedding matrix for gradient-based word swap"
             )
-        if not hasattr(self.tokenizer, "pad_token_id") and self.tokenizer.pad_token_id:
-            raise ValueError(
-                "Tokenizer needs to have `pad_token_id` for gradient-based word swap"
-            )
 
         self.top_n = top_n
         self.is_black_box = False
@@ -38,8 +34,8 @@ class WordSwapTokenGradientBased(WordSwap):
         tokens_indices_to_replace = self._get_tokens_indices_to_replace(attacked_text, indices_to_replace)
         diffs = torch.zeros(len(tokens_indices_to_replace), self.num_random_tokens)
 
-        # sample tokens at random without self.tokenizer.pad_token_id
-        random_token_idxes = np.random.randint(lookup_table.shape[0]-1, size=self.num_random_tokens)
+        vocab_size = lookup_table.shape[0]
+        random_token_idxes = np.random.randint(vocab_size, size=self.num_random_tokens)
 
         for j, token_idx in enumerate(tokens_indices_to_replace):
             b_grads = lookup_table[random_token_idxes] @ emb_grad[token_idx]
