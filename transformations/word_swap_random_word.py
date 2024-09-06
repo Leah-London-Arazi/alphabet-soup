@@ -6,7 +6,7 @@ Word Swap by Random Character Substitution
 from textattack.transformations.word_swaps import WordSwap
 from utils.utils import random_word
 
-class WordSwapRandomUnknownWord(WordSwap):
+class WordSwapRandomWord(WordSwap):
     def __init__(self, num_random_words=10, rand_word_min_len=3, rand_word_max_length=10, **kwargs):
         super().__init__(**kwargs)
         self.min_length = rand_word_min_len
