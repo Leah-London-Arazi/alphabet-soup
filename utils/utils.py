@@ -17,11 +17,6 @@ def print_perturbed_result(perturbed_result):
     print(f"used {perturbed_result.num_queries} queries.")
 
 
-def run_attack(attack, input_text="The movie was filmed somewhere at some time.", label=1):
-    attack_result = attack.attack(input_text, label)
-    perturbed_result = attack_result.perturbed_result
-    print_perturbed_result(perturbed_result)
-
 def random_word(min_len=3, max_len=10):
     length = random.randint(min_len, max_len)  # Random word length
     characters = string.digits + string.ascii_letters + string.punctuation
@@ -31,6 +26,13 @@ def random_word(min_len=3, max_len=10):
 def random_sentence(min_len=3, max_len=10):
     sen_length = random.randint(min_len, max_len)  # Random sentence length
     return " ".join([random_word() for _ in range(sen_length)])
+
+
+def run_attack(attack, input_text=random_sentence(), label=1):
+    attack_result = attack.attack(input_text, label)
+    perturbed_result = attack_result.perturbed_result
+    print_perturbed_result(perturbed_result)
+
 
 def set_random_seed(seed=0):
     torch.manual_seed(seed + 0)
