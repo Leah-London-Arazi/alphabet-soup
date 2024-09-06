@@ -1,7 +1,7 @@
 ###########
 # Adapted from https://github.com/YuxinWenRick/hard-prompts-made-easy/blob/main/optim_utils.py
 ###########
-
+from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import SearchMethod
 import torch
 from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
@@ -38,9 +38,9 @@ class PEZGradientSearch(SearchMethod):
         # begin loop
         cur_result = initial_result
         i = 0
-        search_over = False
+        exhausted_queries = False
 
-        while i < self.max_iter and not search_over:
+        while i < self.max_iter and not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
             nn_indices = self._nn_project(prompt_embeds)
             modified_text = self.tokenizer.decode(nn_indices)
             prompt_len = prompt_embeds.shape[0]
@@ -50,7 +50,7 @@ class PEZGradientSearch(SearchMethod):
             optimizer.step()
             optimizer.zero_grad()
 
-            results, search_over = self.get_goal_results([AttackedText(text_input=modified_text)])
+            results, exhausted_queries = self.get_goal_results([AttackedText(text_input=modified_text)])
             cur_result = results[0]
 
             i += 1
