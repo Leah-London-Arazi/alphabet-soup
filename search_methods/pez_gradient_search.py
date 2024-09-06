@@ -6,7 +6,7 @@ from textattack.search_methods import SearchMethod
 import torch
 from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
 from textattack.shared import AttackedText
-
+from textattack.shared.utils import device as ta_device
 
 class PEZGradientSearch(SearchMethod):
     def __init__(self, model_wrapper, lr, wd, max_iter=50, debug=False):
@@ -25,7 +25,7 @@ class PEZGradientSearch(SearchMethod):
         self.wd = wd
         self.max_iter = max_iter
         self.debug = debug
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = ta_device
 
     def perform_search(self, initial_result):
         attacked_text = initial_result.attacked_text
