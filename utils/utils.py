@@ -2,6 +2,8 @@ import transformers
 from textattack.models.wrappers import HuggingFaceModelWrapper 
 import random
 import string
+import torch
+import numpy as np
 
 def get_model_wrapper(model_name):
     model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -24,3 +26,11 @@ def random_word(min_len=3, max_len=10):
     length = random.randint(min_len, max_len)  # Random word length
     word = ''.join(random.choices(string.printable, k=length))  # Generate a word
     return word
+
+def set_random_seed(seed=0):
+    torch.manual_seed(seed + 0)
+    torch.cuda.manual_seed(seed + 1)
+    torch.cuda.manual_seed_all(seed + 2)
+    np.random.seed(seed + 3)
+    torch.cuda.manual_seed_all(seed + 4)
+    random.seed(seed + 5)
