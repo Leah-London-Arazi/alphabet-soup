@@ -5,7 +5,7 @@ from transformations.word_swap_random_gradient_based import WordSwapTokenGradien
 from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
 from textattack.search_methods import BeamSearch
-from goal_functions.increase_confidence import IncreaseConfidence
+from goal_functions.increase_confidence import IncreaseConfidenceUntargeted
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
 from utils.utils import get_model_wrapper, run_attack
 
@@ -14,7 +14,7 @@ def character_roulette_black_box__random_char(model_name):
     model_wrapper = get_model_wrapper(model_name)
 
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidence(model_wrapper)
+    goal_function = IncreaseConfidenceUntargeted(model_wrapper)
     constraints = []
     transformation = CompositeTransformation(
         [
@@ -35,7 +35,7 @@ def character_roulette_black_box__random_word(model_name):
     model_wrapper = get_model_wrapper(model_name)
 
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidence(model_wrapper)
+    goal_function = IncreaseConfidenceUntargeted(model_wrapper)
     constraints = []
     transformation = WordSwapRandomWord()
     search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=3)
@@ -50,7 +50,7 @@ def character_roulette_white_box(model_name):
     model_wrapper = get_model_wrapper(model_name)
 
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidence(model_wrapper, query_budget=30, eps=0.1)
+    goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=30, threshold=0.9)
     constraints = []
     transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=50)
     search_method = BeamSearch(beam_width=5)
