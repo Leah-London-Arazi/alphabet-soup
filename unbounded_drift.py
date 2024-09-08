@@ -19,12 +19,12 @@ def unbounded_drift(model_name, targeted=False, max_iter=100):
 
     # Construct our four components for `Attack`
     if targeted:
-        goal_function = IncreaseConfidenceTargeted(model_wrapper, query_budget=max_iter)
+        goal_function = IncreaseConfidenceTargeted(model_wrapper, query_budget=max_iter, target_class=0)
     else:
         goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=max_iter)
     constraints = []
     transformation = NOP()
-    search_method = PEZGradientSearch(model_wrapper, lr=0.4, wd=0, debug=True, max_iter=max_iter)
+    search_method = PEZGradientSearch(model_wrapper, target_class=0, lr=0.4, wd=0, debug=True, max_iter=max_iter)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)

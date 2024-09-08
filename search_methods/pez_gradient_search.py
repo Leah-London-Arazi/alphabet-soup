@@ -7,9 +7,10 @@ import torch
 from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
+from utils import utils
 
 class PEZGradientSearch(SearchMethod):
-    def __init__(self, model_wrapper, lr, wd, max_iter=50, debug=False):
+    def __init__(self, model_wrapper, lr, wd, target_class, max_iter=50, debug=False):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -23,6 +24,7 @@ class PEZGradientSearch(SearchMethod):
         self.token_embeddings = self.model.get_input_embeddings()
         self.lr = lr
         self.wd = wd
+        self.target_class = target_class
         self.max_iter = max_iter
         self.debug = debug
         self.device = ta_device
@@ -44,7 +46,9 @@ class PEZGradientSearch(SearchMethod):
             nn_indices = self._nn_project(prompt_embeds)
             modified_text = self.tokenizer.decode(nn_indices)
             prompt_len = prompt_embeds.shape[0]
-            modified_text_grad = self.model_wrapper.get_grad(modified_text)['gradient']
+            target_class_tensor = torch.tensor(self.target_class, device=self.device)
+            modified_text_grad = utils.get_grad_wrt_func(self.model_wrapper, modified_text,
+                                                         label=target_class_tensor)['gradient']
             prompt_embeds.grad = torch.tensor(modified_text_grad[:prompt_len], device=self.device)
 
             optimizer.step()
