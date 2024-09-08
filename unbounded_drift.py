@@ -26,7 +26,7 @@ def unbounded_drift(model_name):
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
 
-    run_attack(attack=attack, input_text=random_sentence())
+    run_attack(attack=attack)
 
 if __name__ == '__main__':
     unbounded_drift("mnoukhov/gpt2-imdb-sentiment-classifier")
