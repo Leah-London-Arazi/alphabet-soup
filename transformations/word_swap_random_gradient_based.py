@@ -67,13 +67,13 @@ class WordSwapTokenGradientBased(WordSwap):
 
         return tokens_indices_to_replace
 
-    def _get_transformations(self, attacked_text, indices_to_replace):
-        # add the attacked text to transformations in case all transformations reduced accuracy
-        transformations = [attacked_text]
+    def _get_transformations(self, current_text, indices_to_replace):
+        # TODO: add the attacked text to transformations in case all transformations reduced accuracy
+        transformations = []
         for token, idx_in_tokenized_sentence in self._get_replacement_words_by_grad(
-            attacked_text, indices_to_replace
+            current_text, indices_to_replace
         ):
-            text_ids = self.tokenizer(attacked_text.tokenizer_input)["input_ids"]
+            text_ids = self.tokenizer(current_text.tokenizer_input)["input_ids"]
             text_ids[idx_in_tokenized_sentence] = token
             transformed_attacked_text = AttackedText(text_input=self.tokenizer.decode(token_ids=text_ids))
             transformations.append(transformed_attacked_text)
