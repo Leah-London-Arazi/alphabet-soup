@@ -47,7 +47,7 @@ def set_random_seed(seed=0):
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
 # Get labels as a parameter to allow performing backprop with user provided labels for targeted classification
-def get_grad_wrt_func(model_wrapper, text_input, label, criterion=None):
+def get_grad_wrt_func(model_wrapper, text_input, label):
     model = model_wrapper.model
     tokenizer = model_wrapper.tokenizer
 
@@ -80,11 +80,7 @@ def get_grad_wrt_func(model_wrapper, text_input, label, criterion=None):
     input_dict.to(model_device)
 
     try:
-        if criterion is None:
-            loss = model(**input_dict, labels=label)[0]
-        else:
-            logits = model(**input_dict, labels=label)[0]
-            loss = criterion(logits, label)
+        loss = model(**input_dict, labels=label)[0]
     except TypeError:
         raise TypeError(
             f"{type(model)} class does not take in `labels` to calculate loss. "
