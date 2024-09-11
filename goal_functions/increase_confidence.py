@@ -2,7 +2,7 @@ from textattack.goal_functions import ClassificationGoalFunction
 from textattack.goal_functions import TargetedClassification
 
 class IncreaseConfidenceUntargeted(ClassificationGoalFunction):
-    def __init__(self, *args, threshold=0.99, **kwargs):
+    def __init__(self, *args, threshold=0.95, **kwargs):
         super().__init__(*args, **kwargs)
         self.threshold = threshold
 
@@ -13,7 +13,7 @@ class IncreaseConfidenceUntargeted(ClassificationGoalFunction):
         return model_output.max() >= self.threshold
 
 class IncreaseConfidenceTargeted(TargetedClassification):
-    def __init__(self, *args, threshold=0.99, **kwargs):
+    def __init__(self, *args, threshold=0.95, **kwargs):
         super().__init__(*args, **kwargs)
         self.threshold = threshold
 

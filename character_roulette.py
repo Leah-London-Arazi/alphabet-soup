@@ -1,6 +1,7 @@
 import textattack
 from textattack.transformations import WordSwapRandomCharacterSubstitution, WordSwapRandomCharacterDeletion, \
     WordSwapRandomCharacterInsertion
+import utils.utils
 from transformations.word_swap_random_gradient_based import WordSwapTokenGradientBased
 from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
@@ -58,7 +59,7 @@ def character_roulette_white_box(model_name):
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
 
-    run_attack(attack=attack, input_text="dknjks d,ddkls the alkdla.")
+    run_attack(attack=attack)
 
 
 if __name__ == '__main__':
