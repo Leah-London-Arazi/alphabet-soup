@@ -5,6 +5,8 @@ import string
 import torch
 import numpy as np
 import textattack
+from textattack.shared.utils import device as ta_device
+
 
 def get_model_wrapper(model_name):
     model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -48,6 +50,7 @@ def set_random_seed(seed=0):
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
 # Get labels as a parameter to allow performing backprop with user provided labels for targeted classification
 def get_grad_wrt_func(model_wrapper, text_input, label):
+    t_label = torch.tensor(label, device=ta_device)
     model = model_wrapper.model
     tokenizer = model_wrapper.tokenizer
 
@@ -80,7 +83,7 @@ def get_grad_wrt_func(model_wrapper, text_input, label):
     input_dict.to(model_device)
 
     try:
-        loss = model(**input_dict, labels=label)[0]
+        loss = model(**input_dict, labels=t_label)[0]
     except TypeError:
         raise TypeError(
             f"{type(model)} class does not take in `labels` to calculate loss. "

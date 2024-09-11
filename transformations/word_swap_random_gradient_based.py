@@ -7,9 +7,11 @@ import torch
 from textattack.shared import AttackedText
 from textattack.transformations import WordSwap
 
+from utils.utils import get_grad_wrt_func
+
 
 class WordSwapTokenGradientBased(WordSwap):
-    def __init__(self, model_wrapper, top_n=1, num_random_tokens=1):
+    def __init__(self, model_wrapper, top_n=1, num_random_tokens=1, target_class=None):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
         self.model_wrapper = model_wrapper
@@ -23,10 +25,16 @@ class WordSwapTokenGradientBased(WordSwap):
         self.top_n = top_n
         self.is_black_box = False
         self.num_random_tokens = num_random_tokens
+        self.target_class = target_class
 
     def _get_replacement_words_by_grad(self, attacked_text, indices_to_replace):
         lookup_table = self.model.get_input_embeddings().weight.data.cpu()
-        grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
+        if self.target_class is not None:
+            grad_output = get_grad_wrt_func(model_wrapper=self.model_wrapper,
+                                            text_input=attacked_text.tokenizer_input,
+                                            label=self.target_class)
+        else:
+            grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
         emb_grad = torch.tensor(grad_output["gradient"])
         text_ids = grad_output["ids"].squeeze()
 

@@ -6,7 +6,7 @@ from transformations.word_swap_random_gradient_based import WordSwapTokenGradien
 from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
 from textattack.search_methods import BeamSearch
-from goal_functions.increase_confidence import IncreaseConfidenceUntargeted
+from goal_functions.increase_confidence import IncreaseConfidenceUntargeted, IncreaseConfidenceTargeted
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
 from utils.utils import get_model_wrapper, run_attack
 
@@ -47,14 +47,19 @@ def character_roulette_black_box__random_word(model_name):
     run_attack(attack=attack)
 
 
-def character_roulette_white_box(model_name):
+def character_roulette_white_box(model_name, targeted=False, query_budget=30):
     model_wrapper = get_model_wrapper(model_name)
 
+    target_class = 0
+
     # Construct our four components for `Attack`
-    goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=30, threshold=0.9)
+    if targeted:
+        goal_function = IncreaseConfidenceTargeted(model_wrapper, query_budget=query_budget, target_class=target_class)
+    else:
+        goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=query_budget, threshold=0.9)
     constraints = []
-    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=50)
-    search_method = BeamSearch(beam_width=5)
+    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=500, target_class=target_class)
+    search_method = BeamSearch(beam_width=10)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
@@ -64,4 +69,5 @@ def character_roulette_white_box(model_name):
 
 if __name__ == '__main__':
     character_roulette_black_box__random_char("mnoukhov/gpt2-imdb-sentiment-classifier")
-    character_roulette_white_box(r"mnoukhov/gpt2-imdb-sentiment-classifier")
+    character_roulette_white_box("mnoukhov/gpt2-imdb-sentiment-classifier")
+    character_roulette_white_box("cardiffnlp/twitter-roberta-base-sentiment-latest", targeted=True, query_budget=100)

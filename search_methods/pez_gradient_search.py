@@ -46,9 +46,8 @@ class PEZGradientSearch(SearchMethod):
             nn_indices = self._nn_project(prompt_embeds)
             modified_text = self.tokenizer.decode(nn_indices)
             prompt_len = prompt_embeds.shape[0]
-            target_class_tensor = torch.tensor(self.target_class, device=self.device)
             modified_text_grad = utils.get_grad_wrt_func(self.model_wrapper, modified_text,
-                                                         label=target_class_tensor)['gradient']
+                                                         label=self.target_class)['gradient']
             prompt_embeds.grad = torch.tensor(modified_text_grad[:prompt_len], device=self.device)
 
             optimizer.step()
