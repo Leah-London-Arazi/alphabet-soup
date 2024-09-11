@@ -42,8 +42,12 @@ class PEZGradientSearch(SearchMethod):
         i = 0
         exhausted_queries = False
 
+        word_refs = ["bad", "evil", "terror", "negative"]
+        filtered_embedding_matrix = normalize_embeddings(
+            utils.get_filtered_token_ids(self.tokenizer, list(self.tokenizer.vocab.values()), word_refs)
+        )
         while i < self.max_iter and not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
-            nn_indices = self._nn_project(prompt_embeds)
+            nn_indices = self._nn_project(prompt_embeds, filtered_embedding_matrix)
             modified_text = self.tokenizer.decode(nn_indices)
             prompt_len = prompt_embeds.shape[0]
             modified_text_grad = utils.get_grad_wrt_func(self.model_wrapper, modified_text,
@@ -69,17 +73,16 @@ class PEZGradientSearch(SearchMethod):
         return False
 
 
-    def _nn_project(self, embeds):
+    def _nn_project(self, prompt_embeds, filtered_embedding_matrix):
         with torch.no_grad():
             # Using the sentence transformers semantic search which is
             # a dot product exact kNN search between a set of
             # query vectors and a corpus of vectors
 
-            embeds = normalize_embeddings(embeds)
-            embedding_matrix = normalize_embeddings(self.token_embeddings.weight.data)
+            prompt_embeds = normalize_embeddings(prompt_embeds)
 
-            hits = semantic_search(embeds, embedding_matrix,
-                                   query_chunk_size=embeds.shape[0],
+            hits = semantic_search(prompt_embeds, filtered_embedding_matrix,
+                                   query_chunk_size=prompt_embeds.shape[0],
                                    top_k=1,
                                    score_function=dot_score)
 

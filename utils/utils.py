@@ -1,3 +1,4 @@
+import bert_score
 import transformers
 from textattack.models.wrappers import HuggingFaceModelWrapper 
 import random
@@ -120,3 +121,14 @@ def char_level_entropy(text):
     probabilities = counts.float() / num_chars
 
     return torch.sum(torch.special.entr(probabilities))
+
+
+def get_bert_score(text, word_refs):
+    bert_scorer = bert_score.BERTScorer(model_type="bert-base-uncased", idf=False, device=ta_device)
+    return bert_scorer.score(text, word_refs)[2].item()
+
+
+def get_filtered_token_ids(tokenizer, token_ids, word_refs):
+    text = [tokenizer.decode(token_id) for token_id in token_ids]
+    bert_scores = get_bert_score(text, word_refs)
+    return 0
