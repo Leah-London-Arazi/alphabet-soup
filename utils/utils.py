@@ -24,6 +24,7 @@ def random_word(min_len=3, max_len=10):
     word = ''.join(random.choices(characters, k=length))  # Generate a word
     return word
 
+
 def random_sentence(min_len=3, max_len=10):
     sen_length = random.randint(min_len, max_len)  # Random sentence length
     return " ".join([random_word() for _ in range(sen_length)])
@@ -54,7 +55,6 @@ def get_grad_wrt_func(model_wrapper, text_input, label, criterion=None):
         raise NotImplementedError(
             "`get_grads` for T5FotTextToText has not been implemented yet."
         )
-
 
     model.train()
     embedding_layer = model.get_input_embeddings()
@@ -104,6 +104,7 @@ def get_grad_wrt_func(model_wrapper, text_input, label, criterion=None):
     output = {"ids": input_dict["input_ids"], "gradient": grad}
 
     return output
+
 
 def char_level_entropy(text):
     # Create a set of unique characters
