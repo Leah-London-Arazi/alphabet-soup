@@ -8,9 +8,11 @@ from sentence_transformers.util import normalize_embeddings, semantic_search, do
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
 from utils import utils
+from utils.utils import get_filtered_token_ids
+
 
 class PEZGradientSearch(SearchMethod):
-    def __init__(self, model_wrapper, lr, wd, target_class, max_iter=50, debug=False):
+    def __init__(self, model_wrapper, lr, wd, target_class, max_iter=50, filter_by_target_class=False, debug=False):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -27,32 +29,50 @@ class PEZGradientSearch(SearchMethod):
         self.target_class = target_class
         self.max_iter = max_iter
         self.debug = debug
-        self.device = ta_device
+        self.filter_by_target_class = filter_by_target_class
+
+        self.model.eval()
+        self.model.to(ta_device)
 
     def perform_search(self, initial_result):
         attacked_text = initial_result.attacked_text
 
         # init
-        text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"]
-        prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(self.device)
+        text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
+        prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
+
+        # filter embeddings based on classification confidence
+        token_ids = range(self.token_embeddings.num_embeddings)
+        if self.filter_by_target_class:
+            token_ids = get_filtered_token_ids(model=self.model,
+                                               tokenizer=self.tokenizer,
+                                               token_ids=token_ids,
+                                               target_class=self.target_class,
+                                               confidence_threshold=0.5,
+                                               batch_size=60,
+                                               prefix="This is")
+        if token_ids.shape[0] == 0:
+            raise Exception("Filtered all tokens!")
+
+        if self.debug:
+            print(f"Got {len(token_ids)} tokens after filtering")
+
+        filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(token_ids))
 
         # begin loop
         cur_result = initial_result
         i = 0
         exhausted_queries = False
 
-        word_refs = ["bad", "evil", "terror", "negative"]
-        filtered_embedding_matrix = normalize_embeddings(
-            utils.get_filtered_token_ids(self.tokenizer, list(self.tokenizer.vocab.values()), word_refs)
-        )
+        # PEZ optimization algorithm
         while i < self.max_iter and not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
-            nn_indices = self._nn_project(prompt_embeds, filtered_embedding_matrix)
+            nn_indices = self._nn_project(prompt_embeds, filtered_embedding_matrix, token_ids)
             modified_text = self.tokenizer.decode(nn_indices)
             prompt_len = prompt_embeds.shape[0]
             modified_text_grad = utils.get_grad_wrt_func(self.model_wrapper, modified_text,
                                                          label=self.target_class)['gradient']
-            prompt_embeds.grad = torch.tensor(modified_text_grad[:prompt_len], device=self.device)
+            prompt_embeds.grad = torch.tensor(modified_text_grad[:prompt_len], device=ta_device)
 
             optimizer.step()
             optimizer.zero_grad()
@@ -72,8 +92,7 @@ class PEZGradientSearch(SearchMethod):
     def is_black_box(self):
         return False
 
-
-    def _nn_project(self, prompt_embeds, filtered_embedding_matrix):
+    def _nn_project(self, prompt_embeds, filtered_embedding_matrix, filtered_token_ids):
         with torch.no_grad():
             # Using the sentence transformers semantic search which is
             # a dot product exact kNN search between a set of
@@ -86,6 +105,6 @@ class PEZGradientSearch(SearchMethod):
                                    top_k=1,
                                    score_function=dot_score)
 
-            nn_indices = torch.tensor([hit[0]["corpus_id"] for hit in hits], device=self.device)
+            nn_indices = torch.tensor([filtered_token_ids[hit[0]["corpus_id"]] for hit in hits], device=ta_device)
 
         return nn_indices

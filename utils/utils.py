@@ -7,7 +7,8 @@ import torch
 import numpy as np
 import textattack
 from textattack.shared.utils import device as ta_device
-
+import tqdm
+import math
 
 def get_model_wrapper(model_name):
     model = transformers.AutoModelForSequenceClassification.from_pretrained(model_name)
@@ -139,8 +140,24 @@ def get_bert_avg_score(candidates, word_refs):
     return scores / len(word_refs)
 
 
-def get_filtered_token_ids(tokenizer, token_ids, word_refs, max_similarity):
-    torch_token_ids = torch.tensor(token_ids, device=ta_device)
-    candidates = [tokenizer.decode(token_id) for token_id in token_ids]
-    avg_scores = get_bert_avg_score(candidates, word_refs)
-    return torch_token_ids[avg_scores <= max_similarity]
+def get_filtered_token_ids(model, tokenizer, token_ids, target_class, confidence_threshold, batch_size, prefix=""):
+    torch_token_ids = torch.tensor(token_ids, device=ta_device).unsqueeze(1)
+
+    n_tokens = len(token_ids)
+    number_of_batches = math.ceil(n_tokens / batch_size)
+    filtered_token_ids = []
+
+    for i in tqdm.trange(number_of_batches):
+        token_ids_batch = torch_token_ids[i * batch_size: min((i+1)* batch_size, n_tokens)]
+        sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
+        sentences_batch_padded = tokenizer(sentences_batch,
+                                           add_special_tokens=True,
+                                           return_tensors="pt",
+                                           padding="max_length",
+                                           truncation=True).to(device=ta_device)
+        confidence = torch.nn.functional.softmax(model(**sentences_batch_padded).logits, dim=1)
+        confidence_target_class = confidence[:, target_class]
+        filtered_token_ids_batch = token_ids_batch[confidence_target_class < confidence_threshold].flatten().tolist()
+        filtered_token_ids += filtered_token_ids_batch
+
+    return torch.tensor(filtered_token_ids, device=ta_device)
