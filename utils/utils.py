@@ -123,12 +123,24 @@ def char_level_entropy(text):
     return torch.sum(torch.special.entr(probabilities))
 
 
-def get_bert_score(text, word_refs):
-    bert_scorer = bert_score.BERTScorer(model_type="bert-base-uncased", idf=False, device=ta_device)
-    return bert_scorer.score(text, word_refs)[2].item()
+def get_bert_score(candidates, word_refs):
+    bert_scorer = bert_score.BERTScorer(model_type="microsoft/deberta-xlarge-mnli", idf=False, device=ta_device)
+    return bert_scorer.score(candidates, word_refs)
 
 
-def get_filtered_token_ids(tokenizer, token_ids, word_refs):
-    text = [tokenizer.decode(token_id) for token_id in token_ids]
-    bert_scores = get_bert_score(text, word_refs)
-    return 0
+def get_bert_avg_score(candidates, word_refs):
+    n_candidates = len(candidates)
+    scores = torch.zeros(n_candidates, device=ta_device)
+
+    for word in word_refs:
+        bert_scores = get_bert_score(candidates=candidates, word_refs=[word]*n_candidates)
+        scores += bert_scores[2].to(ta_device)
+
+    return scores / len(word_refs)
+
+
+def get_filtered_token_ids(tokenizer, token_ids, word_refs, max_similarity):
+    torch_token_ids = torch.tensor(token_ids, device=ta_device)
+    candidates = [tokenizer.decode(token_id) for token_id in token_ids]
+    avg_scores = get_bert_avg_score(candidates, word_refs)
+    return torch_token_ids[avg_scores <= max_similarity]
