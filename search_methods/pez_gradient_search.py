@@ -8,7 +8,6 @@ from sentence_transformers.util import normalize_embeddings, semantic_search, do
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
 from utils import utils
-from utils.utils import get_filtered_token_ids
 
 DEFAULT_CACHE_DIR = "cache"
 
@@ -49,29 +48,18 @@ class PEZGradientSearch(SearchMethod):
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
         token_ids = range(self.token_embeddings.num_embeddings)
+        filtered_embedding_matrix = self.token_embeddings
 
         # filter embeddings based on classification confidence
         if self.filter_by_target_class:
-            prefixes = ["", "This is"]
-            confidence_threshold = 0.5
-            for prefix in prefixes:
-                token_ids_prefix = get_filtered_token_ids(model=self.model,
-                                                   tokenizer=self.tokenizer,
-                                                   target_class=self.target_class,
-                                                   confidence_threshold=confidence_threshold,
-                                                   batch_size=60,
-                                                   prefix=prefix,
-                                                   cache_dir=self.cache_dir)
-
-
-        if token_ids.shape[0] == 0:
-            raise Exception("Filtered all tokens!")
-
-        if self.debug:
-            print(f"Got {len(token_ids)} tokens after filtering")
-
-        filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(token_ids))
-
+            token_ids, filtered_embedding_matrix = utils.get_filtered_token_ids_multi_prefix(model=self.model,
+                                                                                             tokenizer=self.tokenizer,
+                                                                                             target_class=self.target_class,
+                                                                                             confidence_threshold=0.5,
+                                                                                             batch_size=60,
+                                                                                             prefixes=["", "This is "],
+                                                                                             cache_dir=self.cache_dir,
+                                                                                             debug=self.debug)
         # begin loop
         cur_result = initial_result
         i = 0

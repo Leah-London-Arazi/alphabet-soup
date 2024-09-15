@@ -1,7 +1,7 @@
 import os
-
 import bert_score
 import transformers
+from sentence_transformers.util import normalize_embeddings
 from textattack.models.wrappers import HuggingFaceModelWrapper 
 import random
 import string
@@ -142,7 +142,7 @@ def get_bert_avg_score(candidates, word_refs):
     return scores / len(word_refs)
 
 
-def get_filtered_token_ids(model, tokenizer, target_class, confidence_threshold, batch_size, cache_dir, prefix=""):
+def get_filtered_token_ids_single_prefix(model, tokenizer, target_class, confidence_threshold, batch_size, cache_dir, prefix=""):
     cache_file_name = f"model={model.__class__.__name__}_prefix={prefix}.pt"
     cache_file_path = os.path.join(cache_dir, cache_file_name)
 
@@ -173,3 +173,32 @@ def get_filtered_token_ids(model, tokenizer, target_class, confidence_threshold,
     filtered_token_ids = token_ids[confidence_target_class < confidence_threshold].flatten().tolist()
 
     return torch.tensor(filtered_token_ids, device=ta_device)
+
+
+def get_filtered_token_ids_multi_prefix(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes,
+                                        batch_size, debug):
+    # filter embeddings based on classification confidence
+    token_embeddings = model.get_input_embeddings()
+    all_token_ids = range(token_embeddings.num_embeddings)
+    token_ids = all_token_ids
+    for prefix in prefixes:
+        token_ids_prefix = get_filtered_token_ids_single_prefix(model=model,
+                                                                tokenizer=tokenizer,
+                                                                target_class=target_class,
+                                                                confidence_threshold=confidence_threshold,
+                                                                batch_size=batch_size,
+                                                                prefix=prefix,
+                                                                cache_dir=cache_dir)
+        token_ids = torch.tensor(np.intersect1d(token_ids_prefix, token_ids))
+
+    if token_ids.shape[0] == 0:
+        raise Exception("Filtered all tokens!")
+
+    if debug:
+        print(f"{len(token_ids)} tokens remaining after filtering")
+        filtered_tokens = torch.tensor(np.setdiff1d(all_token_ids, token_ids))
+        filtered_words = tokenizer.batch_decode(filtered_tokens)
+        print(f"Filtered the following tokens: {filtered_words}")
+
+    filtered_embedding_matrix = normalize_embeddings(token_embeddings(token_ids))
+    return token_ids, filtered_embedding_matrix
