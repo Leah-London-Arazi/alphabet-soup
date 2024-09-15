@@ -48,18 +48,19 @@ class PEZGradientSearch(SearchMethod):
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
         token_ids = range(self.token_embeddings.num_embeddings)
-        filtered_embedding_matrix = self.token_embeddings
 
         # filter embeddings based on classification confidence
         if self.filter_by_target_class:
-            token_ids, filtered_embedding_matrix = utils.get_filtered_token_ids_multi_prefix(model=self.model,
-                                                                                             tokenizer=self.tokenizer,
-                                                                                             target_class=self.target_class,
-                                                                                             confidence_threshold=0.5,
-                                                                                             batch_size=60,
-                                                                                             prefixes=["", "This is "],
-                                                                                             cache_dir=self.cache_dir,
-                                                                                             debug=self.debug)
+            token_ids = utils.get_filtered_token_ids_multi_prefix(model=self.model,
+                                                                  tokenizer=self.tokenizer,
+                                                                  target_class=self.target_class,
+                                                                  confidence_threshold=0.5,
+                                                                  batch_size=60,
+                                                                  prefixes=["", "This is "],
+                                                                  cache_dir=self.cache_dir,
+                                                                  debug=self.debug)
+        filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(token_ids))
+
         # begin loop
         cur_result = initial_result
         i = 0

@@ -1,7 +1,6 @@
 import os
 import bert_score
 import transformers
-from sentence_transformers.util import normalize_embeddings
 from textattack.models.wrappers import HuggingFaceModelWrapper 
 import random
 import string
@@ -200,5 +199,4 @@ def get_filtered_token_ids_multi_prefix(model, tokenizer, target_class, confiden
         filtered_words = tokenizer.batch_decode(filtered_tokens)
         print(f"Filtered the following tokens: {filtered_words}")
 
-    filtered_embedding_matrix = normalize_embeddings(token_embeddings(token_ids))
-    return token_ids, filtered_embedding_matrix
+    return token_ids
