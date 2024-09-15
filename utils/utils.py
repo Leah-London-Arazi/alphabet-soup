@@ -1,3 +1,5 @@
+import os
+
 import bert_score
 import transformers
 from textattack.models.wrappers import HuggingFaceModelWrapper 
@@ -140,24 +142,34 @@ def get_bert_avg_score(candidates, word_refs):
     return scores / len(word_refs)
 
 
-def get_filtered_token_ids(model, tokenizer, token_ids, target_class, confidence_threshold, batch_size, prefix=""):
-    torch_token_ids = torch.tensor(token_ids, device=ta_device).unsqueeze(1)
+def get_filtered_token_ids(model, tokenizer, target_class, confidence_threshold, batch_size, cache_dir, prefix=""):
+    cache_file_name = f"model={model.__class__.__name__}_prefix={prefix}.pt"
+    cache_file_path = os.path.join(cache_dir, cache_file_name)
 
-    n_tokens = len(token_ids)
-    number_of_batches = math.ceil(n_tokens / batch_size)
-    filtered_token_ids = []
+    token_embeddings = model.get_input_embeddings()
+    token_ids = torch.tensor(range(token_embeddings.num_embeddings), device=ta_device).unsqueeze(1)
 
-    for i in tqdm.trange(number_of_batches):
-        token_ids_batch = torch_token_ids[i * batch_size: min((i+1)* batch_size, n_tokens)]
-        sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
-        sentences_batch_padded = tokenizer(sentences_batch,
-                                           add_special_tokens=True,
-                                           return_tensors="pt",
-                                           padding="max_length",
-                                           truncation=True).to(device=ta_device)
-        confidence = torch.nn.functional.softmax(model(**sentences_batch_padded).logits, dim=1)
-        confidence_target_class = confidence[:, target_class]
-        filtered_token_ids_batch = token_ids_batch[confidence_target_class < confidence_threshold].flatten().tolist()
-        filtered_token_ids += filtered_token_ids_batch
+    if os.path.exists(cache_file_path):
+        confidence = torch.load(cache_file_path)
+    else:
+        n_tokens = len(token_ids)
+        number_of_batches = math.ceil(n_tokens / batch_size)
+        confidence = []
+
+        for i in tqdm.trange(number_of_batches):
+            token_ids_batch = token_ids[i * batch_size: min((i+1)* batch_size, n_tokens)]
+            sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
+            sentences_batch_padded = tokenizer(sentences_batch,
+                                               add_special_tokens=True,
+                                               return_tensors="pt",
+                                               padding="max_length",
+                                               truncation=True).to(device=ta_device)
+            confidence_batch = torch.nn.functional.softmax(model(**sentences_batch_padded).logits, dim=1)
+            confidence.append(confidence_batch)
+
+        confidence = torch.cat(confidence)
+
+    confidence_target_class = confidence[:, target_class]
+    filtered_token_ids = token_ids[confidence_target_class < confidence_threshold].flatten().tolist()
 
     return torch.tensor(filtered_token_ids, device=ta_device)

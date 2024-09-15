@@ -10,9 +10,10 @@ from textattack.shared.utils import device as ta_device
 from utils import utils
 from utils.utils import get_filtered_token_ids
 
+DEFAULT_CACHE_DIR = "cache"
 
 class PEZGradientSearch(SearchMethod):
-    def __init__(self, model_wrapper, lr, wd, target_class, max_iter=50, filter_by_target_class=False, debug=False):
+    def __init__(self, model_wrapper, lr, wd, target_class, cache_dir=None, max_iter=50, filter_by_target_class=False, debug=False):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -21,18 +22,24 @@ class PEZGradientSearch(SearchMethod):
                 "Model needs word embedding matrix for gradient-based word swap"
             )
 
+        self.model.eval()
+        self.model.to(ta_device)
+
         self.model_wrapper = model_wrapper
         self.tokenizer = self.model_wrapper.tokenizer
         self.token_embeddings = self.model.get_input_embeddings()
+
         self.lr = lr
         self.wd = wd
-        self.target_class = target_class
         self.max_iter = max_iter
-        self.debug = debug
+
+        self.target_class = target_class
         self.filter_by_target_class = filter_by_target_class
 
-        self.model.eval()
-        self.model.to(ta_device)
+        if cache_dir is None:
+            self.cache_dir = DEFAULT_CACHE_DIR
+
+        self.debug = debug
 
     def perform_search(self, initial_result):
         attacked_text = initial_result.attacked_text
@@ -41,17 +48,22 @@ class PEZGradientSearch(SearchMethod):
         text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
+        token_ids = range(self.token_embeddings.num_embeddings)
 
         # filter embeddings based on classification confidence
-        token_ids = range(self.token_embeddings.num_embeddings)
         if self.filter_by_target_class:
-            token_ids = get_filtered_token_ids(model=self.model,
-                                               tokenizer=self.tokenizer,
-                                               token_ids=token_ids,
-                                               target_class=self.target_class,
-                                               confidence_threshold=0.5,
-                                               batch_size=60,
-                                               prefix="This is")
+            prefixes = ["", "This is"]
+            confidence_threshold = 0.5
+            for prefix in prefixes:
+                token_ids_prefix = get_filtered_token_ids(model=self.model,
+                                                   tokenizer=self.tokenizer,
+                                                   target_class=self.target_class,
+                                                   confidence_threshold=confidence_threshold,
+                                                   batch_size=60,
+                                                   prefix=prefix,
+                                                   cache_dir=self.cache_dir)
+
+
         if token_ids.shape[0] == 0:
             raise Exception("Filtered all tokens!")
 
