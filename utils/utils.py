@@ -145,8 +145,7 @@ def get_filtered_token_ids_single_prefix(model, tokenizer, target_class, confide
     cache_file_name = f"model={model.__class__.__name__}_prefix={prefix}.pt"
     cache_file_path = os.path.join(cache_dir, cache_file_name)
 
-    token_embeddings = model.get_input_embeddings()
-    token_ids = torch.tensor(range(token_embeddings.num_embeddings), device=ta_device).unsqueeze(1)
+    token_ids = torch.tensor(range(len(tokenizer)), device=ta_device).unsqueeze(1)
 
     if os.path.exists(cache_file_path):
         confidence = torch.load(cache_file_path)
@@ -177,8 +176,7 @@ def get_filtered_token_ids_single_prefix(model, tokenizer, target_class, confide
 def get_filtered_token_ids_multi_prefix(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes,
                                         batch_size, debug):
     # filter embeddings based on classification confidence
-    token_embeddings = model.get_input_embeddings()
-    all_token_ids = range(token_embeddings.num_embeddings)
+    all_token_ids = range(len(tokenizer))
     token_ids = all_token_ids
     for prefix in prefixes:
         token_ids_prefix = get_filtered_token_ids_single_prefix(model=model,
