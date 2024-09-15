@@ -29,9 +29,14 @@ class WordSwapTokenGradientBased(WordSwap):
 
     def _get_replacement_words_by_grad(self, attacked_text, indices_to_replace):
         lookup_table = self.model.get_input_embeddings().weight.data.cpu()
+        input_ids = self.tokenizer(attacked_text.tokenizer_input,
+                                  add_special_tokens=True,
+                                  return_tensors="pt",
+                                  padding=True,
+                                  truncation=True).input_ids
         if self.target_class is not None:
             grad_output = get_grad_wrt_func(model_wrapper=self.model_wrapper,
-                                            text_input=attacked_text.tokenizer_input,
+                                            input_ids=input_ids,
                                             label=self.target_class)
         else:
             grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)

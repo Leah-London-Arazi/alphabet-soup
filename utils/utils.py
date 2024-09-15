@@ -52,10 +52,9 @@ def set_random_seed(seed=0):
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
 # Get labels as a parameter to allow performing backprop with user provided labels for targeted classification
-def get_grad_wrt_func(model_wrapper, text_input, label):
+def get_grad_wrt_func(model_wrapper, input_ids, label):
     t_label = torch.tensor(label, device=ta_device)
     model = model_wrapper.model
-    tokenizer = model_wrapper.tokenizer
 
     if isinstance(model, textattack.models.helpers.T5ForTextToText):
         raise NotImplementedError(
@@ -75,18 +74,9 @@ def get_grad_wrt_func(model_wrapper, text_input, label):
     emb_hook = embedding_layer.register_backward_hook(grad_hook)
 
     model.zero_grad()
-    model_device = next(model.parameters()).device
-    input_dict = tokenizer(
-        [text_input],
-        add_special_tokens=True,
-        return_tensors="pt",
-        padding="max_length",
-        truncation=True,
-    )
-    input_dict.to(model_device)
 
     try:
-        loss = model(**input_dict, labels=t_label)[0]
+        loss = model(input_ids=input_ids, labels=t_label)[0]
     except TypeError:
         raise TypeError(
             f"{type(model)} class does not take in `labels` to calculate loss. "
@@ -103,7 +93,7 @@ def get_grad_wrt_func(model_wrapper, text_input, label):
     emb_hook.remove()
     model.eval()
 
-    output = {"ids": input_dict["input_ids"], "gradient": grad}
+    output = {"ids": input_ids, "gradient": grad}
 
     return output
 
@@ -141,60 +131,23 @@ def get_bert_avg_score(candidates, word_refs):
     return scores / len(word_refs)
 
 
-def get_filtered_token_ids_single_prefix(model, tokenizer, target_class, confidence_threshold, batch_size, cache_dir, prefix=""):
-    cache_file_name = f"model={model.__class__.__name__}_prefix={prefix}.pt"
-    cache_file_path = os.path.join(cache_dir, cache_file_name)
+def get_filtered_token_ids(model, tokenizer, target_class, confidence_threshold, batch_size, prefix=""):
+    n_tokens = len(tokenizer)
+    token_ids = torch.tensor(range(n_tokens)).unsqueeze(1).cpu()
+    number_of_batches = math.ceil(n_tokens / batch_size)
+    filtered_token_ids = []
 
-    token_ids = torch.tensor(range(len(tokenizer)), device=ta_device).unsqueeze(1)
-
-    if os.path.exists(cache_file_path):
-        confidence = torch.load(cache_file_path)
-    else:
-        n_tokens = len(token_ids)
-        number_of_batches = math.ceil(n_tokens / batch_size)
-        confidence = []
-
-        for i in tqdm.trange(number_of_batches):
-            token_ids_batch = token_ids[i * batch_size: min((i+1)* batch_size, n_tokens)]
-            sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
-            sentences_batch_padded = tokenizer(sentences_batch,
-                                               add_special_tokens=True,
-                                               return_tensors="pt",
-                                               padding="max_length",
-                                               truncation=True).to(device=ta_device)
-            confidence_batch = torch.nn.functional.softmax(model(**sentences_batch_padded).logits, dim=1)
-            confidence.append(confidence_batch)
-
-        confidence = torch.cat(confidence)
-
-    confidence_target_class = confidence[:, target_class]
-    filtered_token_ids = token_ids[confidence_target_class < confidence_threshold].flatten().tolist()
+    for i in tqdm.trange(number_of_batches):
+        token_ids_batch = token_ids[i * batch_size: min((i+1)* batch_size, n_tokens)].to(device=ta_device)
+        sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
+        sentences_batch_padded = tokenizer(sentences_batch,
+                                           add_special_tokens=True,
+                                           return_tensors="pt",
+                                           padding=True,
+                                           truncation=True).to(device=ta_device)
+        confidence = torch.nn.functional.softmax(model(**sentences_batch_padded).logits, dim=1)
+        confidence_target_class = confidence[:, target_class]
+        filtered_token_ids_batch = token_ids_batch[confidence_target_class < confidence_threshold].flatten().tolist()
+        filtered_token_ids += filtered_token_ids_batch
 
     return torch.tensor(filtered_token_ids, device=ta_device)
-
-
-def get_filtered_token_ids_multi_prefix(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes,
-                                        batch_size, debug):
-    # filter embeddings based on classification confidence
-    all_token_ids = range(len(tokenizer))
-    token_ids = all_token_ids
-    for prefix in prefixes:
-        token_ids_prefix = get_filtered_token_ids_single_prefix(model=model,
-                                                                tokenizer=tokenizer,
-                                                                target_class=target_class,
-                                                                confidence_threshold=confidence_threshold,
-                                                                batch_size=batch_size,
-                                                                prefix=prefix,
-                                                                cache_dir=cache_dir)
-        token_ids = torch.tensor(np.intersect1d(token_ids_prefix, token_ids))
-
-    if token_ids.shape[0] == 0:
-        raise Exception("Filtered all tokens!")
-
-    if debug:
-        print(f"{len(token_ids)} tokens remaining after filtering")
-        filtered_tokens = torch.tensor(np.setdiff1d(all_token_ids, token_ids))
-        filtered_words = tokenizer.batch_decode(filtered_tokens)
-        print(f"Filtered the following tokens: {filtered_words}")
-
-    return token_ids
