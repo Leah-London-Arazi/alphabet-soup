@@ -1,7 +1,6 @@
 import textattack
 from textattack.transformations import WordSwapRandomCharacterSubstitution, WordSwapRandomCharacterDeletion, \
     WordSwapRandomCharacterInsertion
-import utils.utils
 from transformations.word_swap_random_gradient_based import WordSwapTokenGradientBased
 from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
