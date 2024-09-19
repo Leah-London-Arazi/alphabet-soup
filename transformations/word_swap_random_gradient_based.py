@@ -86,7 +86,11 @@ class WordSwapTokenGradientBased(WordSwap):
         for token, idx_in_tokenized_sentence in self._get_replacement_words_by_grad(
             current_text, indices_to_replace
         ):
-            text_ids = self.tokenizer(current_text.tokenizer_input)["input_ids"]
+            text_ids = self.tokenizer(current_text.tokenizer_input,
+                                      add_special_tokens=False,
+                                      padding=True,
+                                      truncation=True)["input_ids"]
+                
             text_ids[idx_in_tokenized_sentence] = token
             transformed_attacked_text = AttackedText(text_input=self.tokenizer.decode(token_ids=text_ids))
             transformations.append(transformed_attacked_text)
