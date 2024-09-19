@@ -87,7 +87,7 @@ def get_grad_wrt_func(model_wrapper, input_ids, label):
     loss.backward()
 
     # grad w.r.t to word embeddings
-    grad = emb_grads[0][0].cpu().numpy()
+    grad = emb_grads[0][0].cpu()
 
     embedding_layer.weight.requires_grad = original_state
     emb_hook.remove()
