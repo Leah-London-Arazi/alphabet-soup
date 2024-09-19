@@ -12,11 +12,10 @@ from utils.utils import get_grad_wrt_func
 
 class WordSwapTokenGradientBased(WordSwap):
     def __init__(self, model_wrapper, top_n=1, num_random_tokens=1, target_class=None):
-        # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
         self.model_wrapper = model_wrapper
         self.tokenizer = self.model_wrapper.tokenizer
-        # Make sure this model has all of the required properties.
+
         if not hasattr(self.model, "get_input_embeddings"):
             raise ValueError(
                 "Model needs word embedding matrix for gradient-based word swap"
@@ -82,6 +81,8 @@ class WordSwapTokenGradientBased(WordSwap):
 
     def _get_transformations(self, current_text, indices_to_replace):
         # TODO: add the attacked text to transformations in case all transformations reduced accuracy
+        # Since TextAttack transformations are on words, we had to decode the tokens, and then we encode them again.
+        # By doing so, we may cause unnecessary changes in the tokens. For example, [3, 6]->"bead"->[37].
         transformations = []
         for token, idx_in_tokenized_sentence in self._get_replacement_words_by_grad(
             current_text, indices_to_replace
