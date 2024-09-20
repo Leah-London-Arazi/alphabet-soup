@@ -5,12 +5,11 @@ Word Swap Random by Gradient
 import numpy as np
 import torch
 from textattack.shared import AttackedText
-from textattack.transformations import WordSwap
-
+from textattack.transformations import Transformation
 from utils.utils import get_grad_wrt_func
 
 
-class WordSwapTokenGradientBased(WordSwap):
+class RandomTokenGradientBasedSwap(Transformation):
     def __init__(self, model_wrapper, top_n=1, num_random_tokens=1, target_class=None):
         self.model = model_wrapper.model
         self.model_wrapper = model_wrapper
