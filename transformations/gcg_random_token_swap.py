@@ -1,11 +1,11 @@
 import torch
 from textattack.shared import AttackedText
-from textattack.transformations import WordSwap
+from textattack.transformations import Transformation
 from utils import utils
 from textattack.shared.utils import device as ta_device
 
 
-class GCGRandomTokenSwap(WordSwap):
+class GCGRandomTokenSwap(Transformation):
     def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k):
         super().__init__()
         self.model_wrapper = model_wrapper
