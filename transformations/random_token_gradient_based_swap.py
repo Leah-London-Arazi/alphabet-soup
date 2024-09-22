@@ -79,7 +79,6 @@ class RandomTokenGradientBasedSwap(Transformation):
         return tokens_indices_to_replace
 
     def _get_transformations(self, current_text, indices_to_replace):
-        # TODO: add the attacked text to transformations in case all transformations reduced accuracy
         # Since TextAttack transformations are on words, we had to decode the tokens, and then we encode them again.
         # By doing so, we may cause unnecessary changes in the tokens. For example, [3, 6]->"bead"->[37].
         transformations = []
@@ -90,7 +89,7 @@ class RandomTokenGradientBasedSwap(Transformation):
                                       add_special_tokens=False,
                                       padding=True,
                                       truncation=True)["input_ids"]
-                
+
             text_ids[idx_in_tokenized_sentence] = token
             transformed_attacked_text = AttackedText(text_input=self.tokenizer.decode(token_ids=text_ids))
             transformations.append(transformed_attacked_text)
