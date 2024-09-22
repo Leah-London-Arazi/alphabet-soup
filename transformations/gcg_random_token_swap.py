@@ -56,7 +56,6 @@ class GCGRandomTokenSwap(Transformation):
 
 
     def _get_transformations(self, current_text, indices_to_replace):
-        # TODO: add the attacked text to transformations in case all transformations reduced accuracy
         new_tokens = self._get_new_tokens_gcg(current_text)
         transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens))]
         
