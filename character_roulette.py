@@ -1,7 +1,7 @@
 import textattack
 from textattack.transformations import WordSwapRandomCharacterSubstitution, WordSwapRandomCharacterDeletion, \
     WordSwapRandomCharacterInsertion
-from transformations.word_swap_random_gradient_based import WordSwapTokenGradientBased
+from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap
 from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
 from textattack.search_methods import BeamSearch
@@ -57,7 +57,7 @@ def character_roulette_white_box(model_name, targeted=False, query_budget=30):
     else:
         goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=query_budget, threshold=0.9)
     constraints = []
-    transformation = WordSwapTokenGradientBased(model_wrapper, top_n=1, num_random_tokens=500, target_class=target_class)
+    transformation = RandomTokenGradientBasedSwap(model_wrapper, top_n=1, num_random_tokens=500, target_class=target_class)
     search_method = BeamSearch(beam_width=10)
 
     # Construct the actual attack
