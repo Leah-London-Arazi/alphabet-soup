@@ -1,7 +1,9 @@
+""""
+NOTE: Since TextAttack transformations are on words, after each transformation we had
+to decode the tokens, and then we encode them again.
+By doing so, we may cause unnecessary changes in the tokens. For example, [3, 6]->"bead"->[37]
 """
-Word Swap Random by Gradient
--------------------------------
-"""
+
 import numpy as np
 import torch
 from textattack.shared import AttackedText
@@ -79,8 +81,6 @@ class RandomTokenGradientBasedSwap(Transformation):
         return tokens_indices_to_replace
 
     def _get_transformations(self, current_text, indices_to_replace):
-        # Since TextAttack transformations are on words, we had to decode the tokens, and then we encode them again.
-        # By doing so, we may cause unnecessary changes in the tokens. For example, [3, 6]->"bead"->[37].
         transformations = []
         for token, idx_in_tokenized_sentence in self._get_replacement_words_by_grad(
             current_text, indices_to_replace

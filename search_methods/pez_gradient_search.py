@@ -1,14 +1,14 @@
 ###########
 # Adapted from https://github.com/YuxinWenRick/hard-prompts-made-easy/blob/main/optim_utils.py
 ###########
+
 import os
 from pathlib import Path
-
+import torch
 import numpy as np
+from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
 from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import SearchMethod
-import torch
-from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
 from utils import utils

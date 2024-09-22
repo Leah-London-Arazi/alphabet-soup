@@ -1,8 +1,3 @@
-"""
-Word Swap by Random Character Substitution
-------------------------------------------------
-"""
-
 from textattack.transformations.word_swaps import WordSwap
 from utils.utils import random_word
 
@@ -14,7 +9,9 @@ class WordSwapRandomWord(WordSwap):
         self.num_random_words = num_random_words
 
     def _get_replacement_words(self, word):
-        """Returns a list containing a random unknown word."""
+        """
+        Returns a list containing a random unknown word.
+        """
         if len(word) <= 1:
             return []
 

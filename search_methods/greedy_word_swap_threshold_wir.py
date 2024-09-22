@@ -1,6 +1,7 @@
-"""
-Reimplementation of Greedy Word Swap with Word Importance Ranking
-"""
+###########
+# Reimplementation of Greedy Word Swap with Word Importance Ranking
+###########
+
 from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import GreedyWordSwapWIR
 

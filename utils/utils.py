@@ -1,15 +1,15 @@
 import bert_score
 import transformers
-from textattack.models.wrappers import HuggingFaceModelWrapper 
 import random
 import string
 import torch
 import numpy as np
-import textattack
-from textattack.shared.utils import device as ta_device
 import tqdm
 import math
 import gensim.downloader as api
+import textattack
+from textattack.shared.utils import device as ta_device
+from textattack.models.wrappers import HuggingFaceModelWrapper
 
 
 def get_model_wrapper(model_name):
@@ -52,8 +52,11 @@ def set_random_seed(seed=0):
 
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
-# Get labels as a parameter to allow performing backprop with user provided labels for targeted classification
 def get_grad_wrt_func(model_wrapper, input_ids, label):
+    """
+    Receives labels as a parameter to allow performing backprop with user
+    provided labels for targeted classification.
+    """
     t_label = torch.tensor(label, device=ta_device)
     model = model_wrapper.model
 
@@ -209,9 +212,10 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold,
     cands += [f" {w}" for w in cands]
 
     token_ids = tokenizer(cands, add_special_tokens=False,
-                           return_tensors="np",
-                           padding=True,
-                           truncation=True).input_ids.flatten()
+                                 return_tensors="np",
+                                 padding=True,
+                                 truncation=True).input_ids.flatten()
+
     # remove special token ids
     token_ids = np.setdiff1d(np.unique(token_ids),  tokenizer.all_special_ids)
     return torch.tensor(token_ids, device= ta_device)
