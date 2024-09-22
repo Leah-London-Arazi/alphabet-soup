@@ -21,6 +21,7 @@ def character_roulette_black_box__random_char(model_name):
             WordSwapRandomCharacterSubstitution(),
             WordSwapRandomCharacterDeletion(),
             WordSwapRandomCharacterInsertion(),
+            WordSwapNeighboringCharacterSwap(),
         ]
     )
     search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=3)
