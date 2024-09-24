@@ -21,7 +21,10 @@ class GCGRandomTokenSwap(Transformation):
 
 
     def _sample_control(self, control_toks, grad):
-        top_indices = (-grad).topk(self.top_k, dim=1).indices
+        loss_change_estimate = grad @ self.model.get_input_embeddings().weight.T
+        
+        # Identify V_cand from AutoPrompt
+        top_indices = (-loss_change_estimate).topk(self.top_k, dim=1).indices
         new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
         new_token_idx = torch.randint(0, self.top_k, size=(1,)).item()
         new_token_val = top_indices[new_token_pos][new_token_idx]
