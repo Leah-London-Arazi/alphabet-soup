@@ -6,7 +6,8 @@ from textattack.shared.utils import device as ta_device
 
 
 class GCGRandomTokenSwap(Transformation):
-    def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k):
+    def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k, filter_by_glove_score=False,
+                 debug=False):
         super().__init__()
         self.model_wrapper = model_wrapper
         self.model = model_wrapper.model
@@ -17,15 +18,26 @@ class GCGRandomTokenSwap(Transformation):
         self.max_retries_per_iter = max_retries_per_iter
         self.top_k = top_k
 
+        # filter tokens using glove score
+        self.token_embeddings = self.model.get_input_embeddings()
+        self.replacement_token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
+        if filter_by_glove_score:
+            self.replacement_token_ids = utils.get_filtered_token_ids_by_glove_score(self.tokenizer,
+                                                                                     word_refs=["love"],
+                                                                                     score_threshold=0.7,
+                                                                                     debug=debug)
+
+        self.debug = debug
         self.is_black_box = False
 
 
     def _sample_control(self, control_toks, loss_change_estimate):
         # Identify V_cand from AutoPrompt
-        top_indices = (-loss_change_estimate).topk(self.top_k, dim=1).indices
+        top_k = min(self.top_k, loss_change_estimate.shape[1])
+        top_indices = (-loss_change_estimate).topk(top_k, dim=1).indices
         new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
-        new_token_idx = torch.randint(0, self.top_k, size=(1,)).item()
-        new_token_val = top_indices[new_token_pos][new_token_idx]
+        new_token_idx = torch.randint(0, top_k, size=(1,)).item()
+        new_token_val = self.replacement_token_ids[top_indices[new_token_pos][new_token_idx]]
         new_control_toks = control_toks.clone()
         new_control_toks[new_token_pos] = new_token_val
         return new_control_toks
@@ -44,7 +56,7 @@ class GCGRandomTokenSwap(Transformation):
         grad = utils.get_grad_wrt_func(self.model_wrapper, input_ids, self.goal_function.target_class)['gradient']
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
-        loss_change_estimate = grad @ self.model.get_input_embeddings().weight.T
+        loss_change_estimate = grad @ self.token_embeddings(self.replacement_token_ids).T
 
         for _ in range(self.max_retries_per_iter):
             new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
