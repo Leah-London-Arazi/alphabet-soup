@@ -20,9 +20,7 @@ class GCGRandomTokenSwap(Transformation):
         self.is_black_box = False
 
 
-    def _sample_control(self, control_toks, grad):
-        loss_change_estimate = grad @ self.model.get_input_embeddings().weight.T
-        
+    def _sample_control(self, control_toks, loss_change_estimate):
         # Identify V_cand from AutoPrompt
         top_indices = (-loss_change_estimate).topk(self.top_k, dim=1).indices
         new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
@@ -46,8 +44,10 @@ class GCGRandomTokenSwap(Transformation):
         grad = utils.get_grad_wrt_func(self.model_wrapper, input_ids, self.goal_function.target_class)['gradient']
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
+        loss_change_estimate = grad @ self.model.get_input_embeddings().weight.T
+
         for _ in range(self.max_retries_per_iter):
-            new_input_ids = self._sample_control(input_ids.squeeze(0), grad)
+            new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
 
             # check if the replacement is better than the original
             logits = self.model(input_ids=new_input_ids.unsqueeze(0)).logits
