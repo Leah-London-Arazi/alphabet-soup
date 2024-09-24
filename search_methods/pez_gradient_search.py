@@ -62,6 +62,8 @@ class PEZGradientSearch(SearchMethod):
         self.debug = debug
 
     def perform_search(self, initial_result):
+        if self.debug:
+            print(f"initial_result: {initial_result}")
         # we optimize the tokens directly so we may receive an "irreversible" sequence of tokens,
         # meaning, after decoding and encoding it again the tokens would not restore.
 
