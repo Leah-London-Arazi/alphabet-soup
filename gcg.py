@@ -10,7 +10,7 @@ def gcg(model_name, target_class=0, max_iter=100, max_retries_per_iter=100, top_
 
     goal_function = IncreaseConfidenceTargeted(model_wrapper, query_budget=max_iter, target_class=target_class)
     constraints = []
-    transformation = GCGRandomTokenSwap(model_wrapper, goal_function=goal_function, 
+    transformation = GCGRandomTokenSwap(model_wrapper, goal_function=goal_function,
                                         max_retries_per_iter=max_retries_per_iter, top_k=top_k)
     # Greedy search
     search_method = BeamSearch(beam_width=1)
