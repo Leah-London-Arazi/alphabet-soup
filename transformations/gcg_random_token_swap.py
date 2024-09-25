@@ -1,7 +1,7 @@
 import torch
 from textattack.shared import AttackedText
 from textattack.transformations import Transformation
-from utils import utils
+from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score
 from textattack.shared.utils import device as ta_device
 
 
@@ -22,10 +22,10 @@ class GCGRandomTokenSwap(Transformation):
         self.token_embeddings = self.model.get_input_embeddings()
         self.replacement_token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
         if filter_by_glove_score:
-            self.replacement_token_ids = utils.get_filtered_token_ids_by_glove_score(self.tokenizer,
-                                                                                     word_refs=["love"],
-                                                                                     score_threshold=0.7,
-                                                                                     debug=debug)
+            self.replacement_token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer,
+                                                                               word_refs=["love"],
+                                                                               score_threshold=0.7,
+                                                                               debug=debug)
 
         self.debug = debug
         self.is_black_box = False
@@ -53,7 +53,7 @@ class GCGRandomTokenSwap(Transformation):
         logits = self.model(input_ids=input_ids).logits
         curr_score = self.goal_function._get_score(logits.squeeze(0), None)
 
-        grad = utils.get_grad_wrt_func(self.model_wrapper, input_ids, self.goal_function.target_class)['gradient']
+        grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.goal_function.target_class)['gradient'].to(device=ta_device)
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
         loss_change_estimate = grad @ self.token_embeddings(self.replacement_token_ids).T

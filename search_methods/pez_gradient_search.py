@@ -11,8 +11,10 @@ from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import SearchMethod
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
-from utils import utils
-from utils.utils import get_filtered_token_ids_by_glove_score
+from utils.attack import (get_filtered_token_ids_by_glove_score,
+                         get_grad_wrt_func,
+                         get_filtered_token_ids_by_target_class,
+                         get_filtered_token_ids_by_bert_score)
 
 DEFAULT_CACHE_DIR = "cache"
 
@@ -98,8 +100,9 @@ class PEZGradientSearch(SearchMethod):
             nn_indices = self._nn_project(prompt_embeds, filtered_embedding_matrix, token_ids)
 
             prompt_len = prompt_embeds.shape[0]
-            nn_indices_grad = utils.get_grad_wrt_func(self.model_wrapper, nn_indices.unsqueeze(0),
-                                                         label=self.target_class)['gradient']
+            nn_indices_grad = get_grad_wrt_func(self.model_wrapper,
+                                                nn_indices.unsqueeze(0),
+                                                label=self.target_class)['gradient']
             prompt_embeds.grad = torch.tensor(nn_indices_grad[:prompt_len], device=ta_device)
 
             optimizer.step()
@@ -153,11 +156,11 @@ class PEZGradientSearch(SearchMethod):
                 token_ids_prefix = torch.load(cache_file_path)
 
             else:
-                token_ids_prefix = utils.get_filtered_token_ids_by_target_class(model=self.model,
-                                                                                tokenizer=self.tokenizer,
-                                                                                target_class=self.target_class,
-                                                                                confidence_threshold=confidence_threshold,
-                                                                                prefix=prefix)
+                token_ids_prefix = get_filtered_token_ids_by_target_class(model=self.model,
+                                                                          tokenizer=self.tokenizer,
+                                                                          target_class=self.target_class,
+                                                                          confidence_threshold=confidence_threshold,
+                                                                          prefix=prefix)
                 torch.save(token_ids_prefix, cache_file_path)
 
             token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
@@ -175,7 +178,7 @@ class PEZGradientSearch(SearchMethod):
 
 
     def _get_filtered_token_ids__bert_score(self, word_refs, score_threshold):
-        token_ids = utils.get_filtered_token_ids_by_bert_score(tokenizer=self.tokenizer,
+        token_ids = get_filtered_token_ids_by_bert_score(tokenizer=self.tokenizer,
                                                                word_refs=word_refs,
                                                                score_threshold=score_threshold)
         if self.debug:

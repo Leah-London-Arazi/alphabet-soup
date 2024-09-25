@@ -90,7 +90,7 @@ rich==13.8.0
 s3transfer==0.10.2
 safetensors==0.4.4
 scikit-learn==1.5.1
-scipy==1.14.1
+scipy==1.13.1
 segtok==1.5.11
 semver==3.0.2
 sentencepiece==0.2.0
@@ -128,3 +128,4 @@ xxhash==3.5.0
 yarl==1.9.4
 sentence_transformers==2.2.2
 gensim==4.3.3
+emoji==0.6.0

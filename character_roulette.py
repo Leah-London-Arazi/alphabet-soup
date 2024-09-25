@@ -1,13 +1,17 @@
+from utils.utils import disable_tensorflow_warnings
+disable_tensorflow_warnings()
+
 import textattack
 from textattack.transformations import WordSwapRandomCharacterSubstitution, WordSwapRandomCharacterDeletion, \
     WordSwapRandomCharacterInsertion, WordSwapNeighboringCharacterSwap
-from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap
-from transformations.word_swap_random_word import WordSwapRandomWord
 from textattack.transformations.composite_transformation import CompositeTransformation
 from textattack.search_methods import BeamSearch
+
+from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap
+from transformations.word_swap_random_word import WordSwapRandomWord
 from goal_functions.increase_confidence import IncreaseConfidenceUntargeted, IncreaseConfidenceTargeted
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
-from utils.utils import get_model_wrapper, run_attack
+from utils.attack import get_model_wrapper, run_attack
 
 
 def character_roulette_black_box__random_char(model_name, targeted=True, target_class=0, query_budget=500,
