@@ -10,11 +10,16 @@ from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThreshol
 from utils.utils import get_model_wrapper, run_attack
 
 
-def character_roulette_black_box__random_char(model_name):
+def character_roulette_black_box__random_char(model_name, targeted=True, target_class=0, query_budget=500,
+                                              threshold=0.9):
     model_wrapper = get_model_wrapper(model_name)
 
-    # Construct our four components for `Attack`
-    goal_function = IncreaseConfidenceUntargeted(model_wrapper)
+    if targeted:
+        goal_function = IncreaseConfidenceTargeted(model_wrapper, target_class=target_class,
+                                                   query_budget=query_budget, threshold=threshold)
+    else:
+        goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=query_budget,
+                                                     threshold=threshold)
     constraints = []
     transformation = CompositeTransformation(
         [
@@ -24,7 +29,7 @@ def character_roulette_black_box__random_char(model_name):
             WordSwapNeighboringCharacterSwap(),
         ]
     )
-    search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=3)
+    search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.05, debug=True, num_transformations_per_word=1)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
@@ -32,14 +37,20 @@ def character_roulette_black_box__random_char(model_name):
     run_attack(attack=attack)
 
 
-def character_roulette_black_box__random_word(model_name):
+def character_roulette_black_box__random_word(model_name, targeted=True, target_class=0, query_budget=500,
+                                              threshold=0.9):
     model_wrapper = get_model_wrapper(model_name)
 
-    # Construct our four components for `Attack`
-    goal_function = IncreaseConfidenceUntargeted(model_wrapper)
+    if targeted:
+        goal_function = IncreaseConfidenceTargeted(model_wrapper, target_class=target_class,
+                                                   query_budget=query_budget, threshold=threshold)
+    else:
+        goal_function = IncreaseConfidenceUntargeted(model_wrapper, query_budget=query_budget,
+                                                     threshold=threshold)
+        
     constraints = []
     transformation = WordSwapRandomWord()
-    search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=3)
+    search_method = GreedyWordSwapThresholdWIR(swap_threshold=0.1, debug=True, num_transformations_per_word=1)
 
     # Construct the actual attack
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
@@ -68,6 +79,7 @@ def character_roulette_white_box(model_name, targeted=False, query_budget=30):
 
 
 if __name__ == '__main__':
-    character_roulette_black_box__random_char("mnoukhov/gpt2-imdb-sentiment-classifier")
-    character_roulette_white_box("mnoukhov/gpt2-imdb-sentiment-classifier")
-    character_roulette_white_box("cardiffnlp/twitter-roberta-base-sentiment-latest", targeted=True, query_budget=100)
+    character_roulette_black_box__random_char("cardiffnlp/twitter-roberta-base-sentiment-latest")
+    # character_roulette_black_box__random_word("cardiffnlp/twitter-roberta-base-sentiment-latest")
+    # character_roulette_white_box("mnoukhov/gpt2-imdb-sentiment-classifier")
+    # character_roulette_white_box("cardiffnlp/twitter-roberta-base-sentiment-latest", targeted=True, query_budget=100)

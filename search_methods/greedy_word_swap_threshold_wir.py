@@ -24,7 +24,7 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
         if self.debug:
             print(f"initial_result: {cur_result}")
 
-        while i < len(index_order) and not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
+        while not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
             for _ in range(self.num_transformation_per_word):
                 transformed_text_candidates = self.get_transformations(
                     cur_result.attacked_text,
@@ -36,6 +36,10 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
 
                 results, exhausted_queries = self.get_goal_results(transformed_text_candidates)
                 results = sorted(results, key=lambda x: -x.score)
+                
+                # Workaround for query budget bug in textattack
+                if len(results) == 0:
+                    continue
 
                 if results[0].score > cur_result.score - self.swap_threshold:
                     cur_result = results[0]
@@ -44,5 +48,7 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
             i += 1
             if self.debug:
                 print(f"cur_result: {cur_result}")
-
+            # After traversing the input text, try again
+            if i >= len(index_order):
+                return self.perform_search(cur_result)
         return cur_result
