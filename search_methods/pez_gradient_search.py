@@ -25,12 +25,13 @@ class PEZGradientSearch(SearchMethod):
                  lr,
                  wd,
                  target_class,
-                 cache_dir=None,
-                 max_iter=50,
-                 filter_by_target_class=False,
-                 filter_by_bert_score=False,
-                 filter_by_glove_score=False,
-                 debug=False):
+                 word_refs,
+                 max_iter,
+                 filter_by_target_class,
+                 filter_by_bert_score,
+                 filter_by_glove_score,
+                 debug,
+                 cache_dir=None,):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -54,6 +55,11 @@ class PEZGradientSearch(SearchMethod):
         self.filter_by_target_class = filter_by_target_class
         self.filter_by_bert_score = filter_by_bert_score
         self.filter_by_glove_score = filter_by_glove_score
+        
+        if sum([filter_by_target_class, filter_by_bert_score, filter_by_glove_score]) > 1:
+            print("WARNING: only the first filter setting will hold.")
+
+        self.word_refs = word_refs
 
         if cache_dir is None:
             self.cache_dir = DEFAULT_CACHE_DIR
@@ -72,21 +78,20 @@ class PEZGradientSearch(SearchMethod):
         attacked_text = initial_result.attacked_text
 
         # init
-        text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
+        text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(device=ta_device)
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
         token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
 
         # filter embeddings based on classification confidence
         if self.filter_by_target_class:
-            token_ids = self._get_filtered_token_ids__multi_prefix(confidence_threshold=0.5,
-                                                                   prefixes=["", "This is "]).to(device=ta_device)
+            token_ids = self._get_filtered_token_ids__multi_prefix(confidence_threshold=0.5, prefixes=["", "This is "])
 
         elif self.filter_by_bert_score:
-            token_ids = self._get_filtered_token_ids__bert_score(word_refs=["this is food", "this is a type of meat", "this is a type of cheese", "this is a drink"], score_threshold=0.8)
+            token_ids = self._get_filtered_token_ids__bert_score(word_refs=self.word_refs, score_threshold=0.8)
 
         elif self.filter_by_glove_score:
-            token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer, word_refs=["bitch"], score_threshold=0.6, debug=self.debug)
+            token_ids = get_filtered_token_ids_by_glove_score(tokenizer=self.tokenizer, word_refs=self.word_refs, score_threshold=0.6, debug=self.debug)
 
         filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(token_ids))
 
@@ -174,7 +179,7 @@ class PEZGradientSearch(SearchMethod):
             filtered_out_words = self.tokenizer.batch_decode([filtered_out_token_ids])
             print(f"Filtered the following tokens: {filtered_out_words}")
 
-        return token_ids
+        return token_ids.to(device=ta_device)
 
 
     def _get_filtered_token_ids__bert_score(self, word_refs, score_threshold):

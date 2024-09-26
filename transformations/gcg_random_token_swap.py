@@ -6,7 +6,13 @@ from textattack.shared.utils import device as ta_device
 
 
 class GCGRandomTokenSwap(Transformation):
-    def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k, filter_by_glove_score=False,
+    def __init__(self,
+                 model_wrapper,
+                 goal_function,
+                 max_retries_per_iter,
+                 top_k,
+                 word_refs,
+                 filter_by_glove_score=False,
                  debug=False):
         super().__init__()
         self.model_wrapper = model_wrapper
@@ -21,9 +27,10 @@ class GCGRandomTokenSwap(Transformation):
         # filter tokens using glove score
         self.token_embeddings = self.model.get_input_embeddings()
         self.replacement_token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
+
         if filter_by_glove_score:
             self.replacement_token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer,
-                                                                               word_refs=["love"],
+                                                                               word_refs=word_refs,
                                                                                score_threshold=0.7,
                                                                                debug=debug)
 
