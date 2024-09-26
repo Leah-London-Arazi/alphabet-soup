@@ -2,21 +2,18 @@
 # Adapted from https://github.com/YuxinWenRick/hard-prompts-made-easy/blob/main/optim_utils.py
 ###########
 
-import os
-from pathlib import Path
 import torch
-import numpy as np
 from sentence_transformers.util import normalize_embeddings, semantic_search, dot_score
 from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import SearchMethod
 from textattack.shared import AttackedText
 from textattack.shared.utils import device as ta_device
 from utils.attack import (get_filtered_token_ids_by_glove_score,
-                         get_grad_wrt_func,
-                         get_filtered_token_ids_by_target_class,
-                         get_filtered_token_ids_by_bert_score)
-
-DEFAULT_CACHE_DIR = "cache"
+                          get_grad_wrt_func,
+                          get_filtered_token_ids_by_bert_score,
+                          get_filtered_token_ids__multi_prefix)
+from utils.defaults import DEFAULT_CACHE_DIR, DEFAULT_PREFIXES
+from utils.utils import create_cache_dir
 
 
 class PEZGradientSearch(SearchMethod):
@@ -25,7 +22,7 @@ class PEZGradientSearch(SearchMethod):
                  lr,
                  wd,
                  target_class,
-                 cache_dir=None,
+                 cache_dir=DEFAULT_CACHE_DIR,
                  max_iter=50,
                  filter_by_target_class=False,
                  filter_by_bert_score=False,
@@ -55,11 +52,8 @@ class PEZGradientSearch(SearchMethod):
         self.filter_by_bert_score = filter_by_bert_score
         self.filter_by_glove_score = filter_by_glove_score
 
-        if cache_dir is None:
-            self.cache_dir = DEFAULT_CACHE_DIR
-
-        cache_directory = Path(self.cache_dir)
-        cache_directory.mkdir(parents=True, exist_ok=True)
+        self.cache_dir = cache_dir
+        create_cache_dir(self.cache_dir)
 
         self.debug = debug
 
@@ -79,14 +73,25 @@ class PEZGradientSearch(SearchMethod):
 
         # filter embeddings based on classification confidence
         if self.filter_by_target_class:
-            token_ids = self._get_filtered_token_ids__multi_prefix(confidence_threshold=0.5,
-                                                                   prefixes=["", "This is "]).to(device=ta_device)
+            token_ids = get_filtered_token_ids__multi_prefix(model=self.model,
+                                                             tokenizer=self.tokenizer,
+                                                             target_class=self.target_class,
+                                                             confidence_threshold=0.5,
+                                                             cache_dir=self.cache_dir,
+                                                             prefixes=DEFAULT_PREFIXES,
+                                                             debug=self.debug).to(device=ta_device)
 
         elif self.filter_by_bert_score:
-            token_ids = self._get_filtered_token_ids__bert_score(word_refs=["this is food", "this is a type of meat", "this is a type of cheese", "this is a drink"], score_threshold=0.8)
+            token_ids = get_filtered_token_ids_by_bert_score(tokenizer=self.tokenizer,
+                                                 word_refs=["this is food",
+                                                            "this is a type of meat",
+                                                            "this is a type of cheese",
+                                                            "this is a drink"],
+                                                 score_threshold=0.8, debug=self.debug)
 
         elif self.filter_by_glove_score:
-            token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer, word_refs=["bitch"], score_threshold=0.6, debug=self.debug)
+            token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer, word_refs=["bitch"],
+                                                              score_threshold=0.6, debug=self.debug)
 
         filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(token_ids))
 
@@ -96,8 +101,10 @@ class PEZGradientSearch(SearchMethod):
         exhausted_queries = False
 
         # PEZ optimization algorithm
-        while i < self.max_iter and not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
-            nn_indices = self._nn_project(prompt_embeds, filtered_embedding_matrix, token_ids)
+        while (i < self.max_iter 
+               and not exhausted_queries 
+               and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED):
+            nn_indices = PEZGradientSearch._nn_project(prompt_embeds, filtered_embedding_matrix, token_ids)
 
             prompt_len = prompt_embeds.shape[0]
             nn_indices_grad = get_grad_wrt_func(self.model_wrapper,
@@ -125,7 +132,8 @@ class PEZGradientSearch(SearchMethod):
         return False
 
 
-    def _nn_project(self, prompt_embeds, filtered_embedding_matrix, filtered_token_ids):
+    @staticmethod
+    def _nn_project(prompt_embeds, filtered_embedding_matrix, filtered_token_ids):
         with torch.no_grad():
             # Using the sentence transformers semantic search which is
             # a dot product exact kNN search between a set of
@@ -138,51 +146,7 @@ class PEZGradientSearch(SearchMethod):
                                    top_k=1,
                                    score_function=dot_score)
 
-            nn_indices = torch.tensor([filtered_token_ids[hit[0]["corpus_id"]] for hit in hits], device=ta_device)
+            nn_indices = torch.tensor([filtered_token_ids[hit[0]["corpus_id"]] for hit in hits],
+                                      device=ta_device)
 
         return nn_indices
-
-
-    def _get_filtered_token_ids__multi_prefix(self, confidence_threshold, prefixes):
-        # filter embeddings based on classification confidence
-        all_token_ids = list(range(len(self.tokenizer)))
-        token_ids = torch.tensor(all_token_ids).cpu()
-
-        for prefix in prefixes:
-            cache_file_name = f"model={self.model.name_or_path.replace("/", "_")}_target_class={self.target_class}_confidence_threshold={confidence_threshold}_prefix={prefix}.pt"
-            cache_file_path = os.path.join(self.cache_dir, cache_file_name)
-
-            if os.path.exists(cache_file_path):
-                token_ids_prefix = torch.load(cache_file_path)
-
-            else:
-                token_ids_prefix = get_filtered_token_ids_by_target_class(model=self.model,
-                                                                          tokenizer=self.tokenizer,
-                                                                          target_class=self.target_class,
-                                                                          confidence_threshold=confidence_threshold,
-                                                                          prefix=prefix)
-                torch.save(token_ids_prefix, cache_file_path)
-
-            token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
-
-        if token_ids.shape[0] == 0:
-            raise Exception("Filtered all tokens!")
-
-        if self.debug:
-            print(f"{len(token_ids)} tokens remaining after filtering")
-            filtered_out_token_ids = torch.tensor(np.setdiff1d(all_token_ids, token_ids))
-            filtered_out_words = self.tokenizer.batch_decode([filtered_out_token_ids])
-            print(f"Filtered the following tokens: {filtered_out_words}")
-
-        return token_ids
-
-
-    def _get_filtered_token_ids__bert_score(self, word_refs, score_threshold):
-        token_ids = get_filtered_token_ids_by_bert_score(tokenizer=self.tokenizer,
-                                                               word_refs=word_refs,
-                                                               score_threshold=score_threshold)
-        if self.debug:
-            remaining_words = self.tokenizer.batch_decode([token_ids])
-            print(f"The following tokens remained: {remaining_words}")
-
-        return token_ids

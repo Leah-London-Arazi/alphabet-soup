@@ -3,11 +3,13 @@ import torch
 import numpy as np
 import tqdm
 import math
+import os
 import gensim.downloader as api
 import transformers
 import textattack
 from textattack.shared.utils import device as ta_device
 from textattack.models.wrappers import HuggingFaceModelWrapper
+from utils.defaults import DEFAULT_BATCH_SIZE
 from utils.utils import random_sentence
 
 
@@ -107,6 +109,44 @@ def get_bert_max_score(candidates, word_refs, model_type):
     return scores
 
 
+def get_filtered_token_ids__multi_prefix(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes, debug):
+    # filter embeddings based on classification confidence
+    all_token_ids = list(range(len(tokenizer)))
+    token_ids = torch.tensor(all_token_ids).cpu()
+
+    for prefix in prefixes:
+        cache_file_name = (f"model={model.name_or_path.replace("/", "_")}"
+                           f"_target_class={target_class}"
+                           f"_confidence_threshold={confidence_threshold}"
+                           f"_prefix={prefix}.pt")
+        cache_file_path = os.path.join(cache_dir, cache_file_name)
+
+        if os.path.exists(cache_file_path):
+            token_ids_prefix = torch.load(cache_file_path)
+
+        else:
+            token_ids_prefix = (
+                get_filtered_token_ids_by_target_class(model=model,
+                                                       tokenizer=tokenizer,
+                                                       target_class=target_class,
+                                                       confidence_threshold=confidence_threshold,
+                                                       prefix=prefix))
+            torch.save(token_ids_prefix, cache_file_path)
+
+        token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
+
+    if token_ids.shape[0] == 0:
+        raise Exception("Filtered all tokens!")
+
+    if debug:
+        print(f"{len(token_ids)} tokens remaining after filtering")
+        filtered_out_token_ids = torch.tensor(np.setdiff1d(all_token_ids, token_ids))
+        filtered_out_words = tokenizer.batch_decode([filtered_out_token_ids])
+        print(f"Filtered the following tokens: {filtered_out_words}")
+
+    return token_ids
+
+
 def get_filtered_token_ids(tokenizer, batch_size, filter_func):
     """
     filter_func receives tensor of token_ids and returns a tensor of filtered_token_ids.
@@ -141,14 +181,24 @@ def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confi
     return get_filtered_token_ids(tokenizer, batch_size, filter_func)
 
 
-def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type):
+def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type, debug):
     candidates = tokenizer.batch_decode(token_ids_batch)
     scores = get_bert_max_score(candidates, word_refs, bert_model_type)
-    return token_ids_batch[scores >= score_threshold]
+    remaining_token_ids = token_ids_batch[scores >= score_threshold]
+    if debug:
+        remaining_words = tokenizer.batch_decode([remaining_token_ids])
+        print(f"The following tokens remained: {remaining_words}")
+
+    return remaining_token_ids
 
 
-def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold, batch_size=4096, bert_model_type="microsoft/deberta-xlarge-mnli"):
-    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type)
+def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold,
+                                         batch_size=DEFAULT_BATCH_SIZE,
+                                         bert_model_type="microsoft/deberta-xlarge-mnli",
+                                         debug=False):
+    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer,
+                                                                word_refs, score_threshold,
+                                                                bert_model_type, debug)
     return get_filtered_token_ids(tokenizer, batch_size, filter_func)
 
 

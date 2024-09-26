@@ -1,5 +1,6 @@
 import random
 import string
+from pathlib import Path
 import torch
 import numpy as np
 
@@ -29,3 +30,9 @@ def set_random_seed(seed=0):
     np.random.seed(seed + 3)
     torch.cuda.manual_seed_all(seed + 4)
     random.seed(seed + 5)
+
+
+def create_cache_dir(cache_dir_name="cache"):
+    cache_directory = Path(cache_dir_name)
+    cache_directory.mkdir(parents=True, exist_ok=True)
+    return cache_dir_name
