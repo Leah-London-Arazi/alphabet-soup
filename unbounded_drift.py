@@ -1,9 +1,12 @@
+from utils.utils import disable_tensorflow_warnings
+disable_tensorflow_warnings()
+
 import torch
 import textattack
 from search_methods.pez_gradient_search import PEZGradientSearch
 from transformations.nop import NOP
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted
-from utils.utils import get_model_wrapper, run_attack
+from utils.attack import get_model_wrapper, run_attack
 
 
 def initialize_prompt(token_embedding, prompt_len, device):
@@ -13,6 +16,7 @@ def initialize_prompt(token_embedding, prompt_len, device):
     prompt_embeds = token_embedding(prompt_ids).detach()
 
     return prompt_embeds
+
 
 def unbounded_drift(model_name, max_iter=100, target_class=0):
     model_wrapper = get_model_wrapper(model_name)
@@ -33,6 +37,7 @@ def unbounded_drift(model_name, max_iter=100, target_class=0):
 
     run_attack(attack=attack)
 
+
 def bounded_drift(model_name, max_iter=100, target_class=0, filter_by_target_class=False, filter_by_bert_score=False, filter_by_glove_score=False, lr=0.4, wd=0):
     model_wrapper = get_model_wrapper(model_name)
 
@@ -47,6 +52,7 @@ def bounded_drift(model_name, max_iter=100, target_class=0, filter_by_target_cla
     attack = textattack.Attack(goal_function, constraints, transformation, search_method)
 
     run_attack(attack=attack)
+
 
 if __name__ == '__main__':
     unbounded_drift("mnoukhov/gpt2-imdb-sentiment-classifier")

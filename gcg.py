@@ -1,8 +1,11 @@
+from utils.utils import disable_tensorflow_warnings
+disable_tensorflow_warnings()
+
 import textattack
 from textattack.search_methods import BeamSearch
 from transformations.gcg_random_token_swap import GCGRandomTokenSwap
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted
-from utils.utils import get_model_wrapper, run_attack
+from utils.attack import get_model_wrapper, run_attack
 
 
 def gcg(model_name, target_class=0, max_iter=100, max_retries_per_iter=100, top_k=256):

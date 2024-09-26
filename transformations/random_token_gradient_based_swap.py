@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from textattack.shared import AttackedText
 from textattack.transformations import Transformation
-from utils.utils import get_grad_wrt_func
+from utils.attack import get_grad_wrt_func
 
 
 class RandomTokenGradientBasedSwap(Transformation):
