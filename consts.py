@@ -1,7 +1,7 @@
 import enum
 
 from recipes import CharacterRouletteBlackBoxRandomChar, CharacterRouletteBlackBoxRandomWord, \
-    CharacterRouletteWhiteBox,UnboundedDriftPEZ, UnboundedDriftGCG
+    CharacterRouletteWhiteBox, UnboundedDriftPEZ, UnboundedDriftGCG
 from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, \
     GCGAttackParams
 

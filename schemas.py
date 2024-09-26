@@ -12,8 +12,8 @@ class AttackParams(BaseModel):
 
 
 class CharacterRouletteBlackBoxAttackParams(AttackParams):
-    swap_threshold: float=0.1
-    num_transformations_per_word: int=1
+    swap_threshold: float = 0.1
+    num_transformations_per_word: int = 1
 
 
 class CharacterRouletteWhiteBoxAttackParams(AttackParams):
