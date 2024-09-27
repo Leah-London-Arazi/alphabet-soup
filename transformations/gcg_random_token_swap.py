@@ -1,26 +1,44 @@
 import torch
 from textattack.shared import AttackedText
 from textattack.transformations import Transformation
-from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score
+from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score, get_filtered_token_ids_by_target_class
 from textattack.shared.utils import device as ta_device
+from utils.defaults import DEFAULT_PREFIXES, DEFAULT_CACHE_DIR
+from utils.utils import create_dir
 
 
 class GCGRandomTokenSwap(Transformation):
-    def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k, filter_by_glove_score=False,
-                 debug=False):
+    def __init__(self, model_wrapper, goal_function, max_retries_per_iter, top_k, cache_dir=DEFAULT_CACHE_DIR,
+                 filter_by_target_class=False, filter_by_glove_score=False, debug=False):
         super().__init__()
         self.model_wrapper = model_wrapper
         self.model = model_wrapper.model
         self.model.to(device=ta_device)
         self.tokenizer = model_wrapper.tokenizer
         self.goal_function = goal_function
+        self.target_class = self.goal_function.target_class
 
         self.max_retries_per_iter = max_retries_per_iter
         self.top_k = top_k
 
+        self.cache_dir = cache_dir
+        create_dir(self.cache_dir)
+
         # filter tokens using glove score
         self.token_embeddings = self.model.get_input_embeddings()
-        self.replacement_token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
+        self.replacement_token_ids = torch.arange(self.token_embeddings.num_embeddings,
+                                                  device=ta_device)
+
+        if filter_by_target_class:
+            self.replacement_token_ids = get_filtered_token_ids_by_target_class(
+                model=self.model,
+                tokenizer=self.tokenizer,
+                target_class=self.target_class,
+                confidence_threshold=0.5,
+                cache_dir=self.cache_dir,
+                prefixes=DEFAULT_PREFIXES,
+                debug=debug).to(device=ta_device)
+
         if filter_by_glove_score:
             self.replacement_token_ids = get_filtered_token_ids_by_glove_score(self.tokenizer,
                                                                                word_refs=["love"],
@@ -53,7 +71,7 @@ class GCGRandomTokenSwap(Transformation):
         logits = self.model(input_ids=input_ids).logits
         curr_score = self.goal_function._get_score(logits.squeeze(0), None)
 
-        grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.goal_function.target_class)['gradient'].to(device=ta_device)
+        grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.target_class)['gradient'].to(device=ta_device)
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
         loss_change_estimate = grad @ self.token_embeddings(self.replacement_token_ids).T
