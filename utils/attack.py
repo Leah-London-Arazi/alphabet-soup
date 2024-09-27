@@ -227,7 +227,8 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold,
     return torch.tensor(token_ids, device= ta_device)
 
 
-def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class, cache_dir, word_refs, debug=False):
+def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class,
+                           cache_dir, word_refs, num_random_tokens=0, debug=False):
     if filter_method == FilterTokenIDsMethod.by_target_class:
         return get_filtered_token_ids_by_target_class(model=model,
                                                       tokenizer=tokenizer,
@@ -248,4 +249,11 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
                                                      word_refs=word_refs,
                                                      score_threshold=0.7,
                                                      debug=debug)
+    if filter_method == FilterTokenIDsMethod.by_random_tokens:
+        return get_random_tokens(tokenizer, num_random_tokens)
     return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
+
+
+def get_random_tokens(tokenizer, num_tokens):
+    vocab_size = len(tokenizer)
+    return torch.randint(vocab_size, size=(num_tokens,))

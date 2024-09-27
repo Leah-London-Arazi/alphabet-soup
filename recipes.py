@@ -114,6 +114,7 @@ class PEZ(AlphabetSoupAttackRecipe):
                                  max_iter=self.query_budget,
                                  filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                  word_refs=self.attack_params.word_refs,
+                                 num_random_tokens=self.attack_params.num_random_tokens,
                                  debug=self.debug,)
 
     @property
@@ -135,4 +136,5 @@ class GCG(AlphabetSoupAttackRecipe):
                                   filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                   word_refs=self.attack_params.word_refs,
                                   top_k=self.attack_params.top_k,
+                                  num_random_tokens=self.attack_params.num_random_tokens,
                                   debug=self.debug,)
