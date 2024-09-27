@@ -115,7 +115,6 @@ class PEZ(AlphabetSoupAttackRecipe):
         return PEZGradientSearch(self.model_wrapper,
                                  target_class=self.target_class,
                                  lr=self.attack_params.lr,
-                                 wd=self.attack_params.wd,
                                  max_iter=self.query_budget,
                                  filter_by_target_class=self.attack_params.filter_by_target_class,
                                  filter_by_bert_score=self.attack_params.filter_by_bert_score,

@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AttackParams(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     @classmethod
     def _from_args(cls, attack_params):
         kwargs = {}
