@@ -4,7 +4,7 @@ from textattack.transformations import Transformation
 from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score, get_filtered_token_ids_by_target_class
 from textattack.shared.utils import device as ta_device
 from utils.defaults import DEFAULT_PREFIXES, DEFAULT_CACHE_DIR
-from utils.utils import create_cache_dir
+from utils.utils import create_dir
 
 
 class GCGRandomTokenSwap(Transformation):
@@ -22,7 +22,7 @@ class GCGRandomTokenSwap(Transformation):
         self.top_k = top_k
 
         self.cache_dir = cache_dir
-        create_cache_dir(self.cache_dir)
+        create_dir(self.cache_dir)
 
         # filter tokens using glove score
         self.token_embeddings = self.model.get_input_embeddings()

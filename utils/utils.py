@@ -32,7 +32,7 @@ def set_random_seed(seed=0):
     random.seed(seed + 5)
 
 
-def create_cache_dir(cache_dir_name="cache"):
-    cache_directory = Path(cache_dir_name)
-    cache_directory.mkdir(parents=True, exist_ok=True)
-    return cache_dir_name
+def create_dir(dir_name="cache"):
+    directory = Path(dir_name)
+    directory.mkdir(parents=True, exist_ok=True)
+    return dir_name

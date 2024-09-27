@@ -13,7 +13,7 @@ from utils.attack import (get_filtered_token_ids_by_glove_score,
                           get_filtered_token_ids_by_bert_score,
                           get_filtered_token_ids_by_target_class)
 from utils.defaults import DEFAULT_CACHE_DIR, DEFAULT_PREFIXES
-from utils.utils import create_cache_dir
+from utils.utils import create_dir
 
 
 class PEZGradientSearch(SearchMethod):
@@ -53,7 +53,7 @@ class PEZGradientSearch(SearchMethod):
         self.filter_by_glove_score = filter_by_glove_score
 
         self.cache_dir = cache_dir
-        create_cache_dir(self.cache_dir)
+        create_dir(self.cache_dir)
 
         self.debug = debug
 
