@@ -14,6 +14,7 @@ def disable_warnings():
     from transformers import logging
     logging.set_verbosity_error()
 
+
 def random_word(min_len=3, max_len=10):
     length = random.randint(min_len, max_len)  # Random word length
     characters = string.digits + string.ascii_letters + string.punctuation

@@ -1,5 +1,5 @@
 from typing import Optional
-
+import typing
 from pydantic import BaseModel, ConfigDict
 from consts import FilterTokenIDsMethod
 
@@ -12,7 +12,7 @@ class AttackParams(BaseModel):
         kwargs = {}
         for param in attack_params:
             key, value = param.split("=")
-            if cls.model_fields[key].annotation.__origin__ == list:
+            if typing.get_origin(cls.model_fields[key].annotation) == list:
                 value = value.split(",")
             kwargs[key] = value
         return cls(**kwargs)
