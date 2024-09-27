@@ -104,31 +104,25 @@ class PEZ(AlphabetSoupAttackRecipe):
     ALLOW_FILTERS: bool
 
     def __init__(self, attack_params: PEZAttackParams, **kwargs):
+        if not self.ALLOW_FILTERS:
+            attack_params.filter_by_target_class = False
+            attack_params.filter_by_bert_score = False
+            attack_params.filter_by_glove_score = False
+
         super().__init__(attack_params=attack_params, **kwargs)
 
     def get_search_method(self):
-        if self.ALLOW_FILTERS:
-            return PEZGradientSearch(self.model_wrapper,
-                                     target_class=self.target_class,
-                                     lr=self.attack_params.lr,
-                                     wd=self.attack_params.wd,
-                                     max_iter=self.query_budget,
-                                     filter_by_target_class=self.attack_params.filter_by_target_class,
-                                     filter_by_bert_score=self.attack_params.filter_by_bert_score,
-                                     filter_by_glove_score=self.attack_params.filter_by_glove_score,
-                                     word_refs=self.attack_params.word_refs,
-                                     debug=self.debug,)
-
         return PEZGradientSearch(self.model_wrapper,
                                  target_class=self.target_class,
                                  lr=self.attack_params.lr,
                                  wd=self.attack_params.wd,
                                  max_iter=self.query_budget,
-                                 filter_by_target_class=False,
-                                 filter_by_bert_score=False,
-                                 filter_by_glove_score=False,
+                                 filter_by_target_class=self.attack_params.filter_by_target_class,
+                                 filter_by_bert_score=self.attack_params.filter_by_bert_score,
+                                 filter_by_glove_score=self.attack_params.filter_by_glove_score,
                                  word_refs=self.attack_params.word_refs,
                                  debug=self.debug,)
+
     @property
     def is_targeted_only(self):
         return True

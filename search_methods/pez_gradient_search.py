@@ -23,7 +23,6 @@ class PEZGradientSearch(SearchMethod):
     def __init__(self,
                  model_wrapper,
                  lr,
-                 wd,
                  target_class,
                  word_refs,
                  max_iter,
@@ -48,7 +47,6 @@ class PEZGradientSearch(SearchMethod):
         self.token_embeddings = self.model.get_input_embeddings()
 
         self.lr = lr
-        self.wd = wd
         self.max_iter = max_iter
 
         self.target_class = target_class
@@ -80,7 +78,7 @@ class PEZGradientSearch(SearchMethod):
         # init
         text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(device=ta_device)
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
-        optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=self.wd)
+        optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=0)
         token_ids = torch.tensor(range(self.token_embeddings.num_embeddings), device=ta_device)
 
         # filter embeddings based on classification confidence

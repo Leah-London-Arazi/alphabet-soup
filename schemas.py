@@ -24,7 +24,6 @@ class CharacterRouletteWhiteBoxAttackParams(AttackParams):
 
 class PEZAttackParams(AttackParams):
     lr: float = 0.4
-    wd: float = 0
     filter_by_target_class: bool = False
     filter_by_bert_score: bool = False
     filter_by_glove_score: bool = False
