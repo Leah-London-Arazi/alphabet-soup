@@ -10,9 +10,7 @@ class Entropy(Metric):
     def calculate(self, results):
         entropy_results = []
         for result in results:
-            if isinstance(result, FailedAttackResult):
-                continue
-            elif isinstance(result, SkippedAttackResult):
+            if isinstance(result, (FailedAttackResult, SkippedAttackResult)):
                 continue
             else:
                 entropy_results.append(
