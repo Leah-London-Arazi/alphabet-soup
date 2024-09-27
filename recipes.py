@@ -123,7 +123,7 @@ class GCG(AlphabetSoupAttackRecipe):
         super().__init__(attack_params=attack_params, **kwargs)
 
     def get_search_method(self):
-        return BeamSearch(beam_width=self.attack_params.beam_width)
+        return GreedySearch()
 
     def get_transformation(self):
         return GCGRandomTokenSwap(self.model_wrapper,
