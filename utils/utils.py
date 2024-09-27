@@ -6,10 +6,13 @@ import numpy as np
 
 
 # https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
-def disable_tensorflow_warnings():
+def disable_warnings():
+    # tensorflow
     import os
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
+    # transformers
+    from transformers import logging
+    logging.set_verbosity_error()
 
 def random_word(min_len=3, max_len=10):
     length = random.randint(min_len, max_len)  # Random word length
@@ -32,7 +35,7 @@ def set_random_seed(seed=0):
     random.seed(seed + 5)
 
 
-def create_dir(dir_name="cache"):
+def create_dir(dir_name):
     directory = Path(dir_name)
     directory.mkdir(parents=True, exist_ok=True)
     return dir_name
