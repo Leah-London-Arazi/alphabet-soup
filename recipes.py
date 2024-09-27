@@ -94,7 +94,6 @@ class CharacterRouletteWhiteBox(AlphabetSoupAttackRecipe):
     def get_transformation(self):
         return RandomTokenGradientBasedSwap(self.model_wrapper,
                                             top_n=self.attack_params.top_n,
-                                            num_random_tokens=self.attack_params.num_random_tokens,
                                             target_class=self.target_class)
     def get_search_method(self):
         return BeamSearch(beam_width=self.attack_params.beam_width)
