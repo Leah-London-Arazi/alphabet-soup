@@ -17,9 +17,7 @@ class Entropy(Metric):
                     Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
                 )
 
-        self.all_metrics["avg_attack_entropy"] = round(
-            sum(entropy_results) / len(entropy_results), 2
-        )
+        self.all_metrics["avg_attack_entropy"] = sum(entropy_results) / len(entropy_results)
 
         return self.all_metrics
 
