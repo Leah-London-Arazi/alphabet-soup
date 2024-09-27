@@ -12,6 +12,8 @@ class AttackParams(BaseModel):
         kwargs = {}
         for param in attack_params:
             key, value = param.split("=")
+            if cls.model_fields[key].annotation.__origin__ == list:
+                value = value.split(",")
             kwargs[key] = value
         return cls(**kwargs)
 

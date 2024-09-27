@@ -246,6 +246,6 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
     if filter_method == FilterTokenIDsMethod.by_glove_score:
         return get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
                                                      word_refs=word_refs,
-                                                     score_threshold=0.6,
+                                                     score_threshold=0.7,
                                                      debug=debug)
     return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)

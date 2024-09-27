@@ -12,7 +12,8 @@ def get_parser():
     parser.add_argument("--target-class", type=int, default=0, help="Attacked class in targeted mode")
     parser.add_argument("--query-budget", type=int, default=500, help="Maximal queries allowed to the model")
     parser.add_argument("--debug", type=bool, default=False, help="Run in debug mode")
-    parser.add_argument("--attack-params", nargs="+", default=[], help="Additional key=value parameters")
+    parser.add_argument("--attack-params", nargs="+", default=[], help="Additional key=value parameters. "
+                                                                                     "For lists, enter the values as a comma-separated strings.")
 
     return parser
 
