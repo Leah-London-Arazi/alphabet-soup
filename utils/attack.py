@@ -175,25 +175,23 @@ def _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, con
     return token_ids_batch[confidence_target_class < confidence_threshold]
 
 
-def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type, debug):
+def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type):
     candidates = tokenizer.batch_decode(token_ids_batch)
     scores = get_bert_max_score(candidates, word_refs, bert_model_type)
-    remaining_token_ids = token_ids_batch[scores >= score_threshold]
+    return token_ids_batch[scores >= score_threshold]
+
+
+def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold, debug,
+                                         batch_size=BERT_FILTER_DEFAULT_BATCH_SIZE,
+                                         bert_model_type="microsoft/deberta-xlarge-mnli"):
+    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer,
+                                                                word_refs, score_threshold,
+                                                                bert_model_type)
+    remaining_token_ids = get_filtered_token_ids(tokenizer, batch_size, filter_func)
     if debug:
         remaining_words = tokenizer.batch_decode([remaining_token_ids])
         print(f"The following tokens remained: {remaining_words}")
-
     return remaining_token_ids
-
-
-def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold,
-                                         batch_size=BERT_FILTER_DEFAULT_BATCH_SIZE,
-                                         bert_model_type="microsoft/deberta-xlarge-mnli",
-                                         debug=False):
-    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer,
-                                                                word_refs, score_threshold,
-                                                                bert_model_type, debug)
-    return get_filtered_token_ids(tokenizer, batch_size, filter_func)
 
 
 def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold, debug=False):
