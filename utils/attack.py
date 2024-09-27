@@ -3,11 +3,15 @@ import torch
 import numpy as np
 import tqdm
 import math
+import os
 import gensim.downloader as api
 import transformers
 import textattack
 from textattack.shared.utils import device as ta_device
 from textattack.models.wrappers import HuggingFaceModelWrapper
+
+from consts import FilterTokenIDsMethod
+from utils.defaults import BERT_FILTER_DEFAULT_BATCH_SIZE, TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE, DEFAULT_PREFIXES
 from utils.utils import random_sentence
 
 
@@ -107,6 +111,43 @@ def get_bert_max_score(candidates, word_refs, model_type):
     return scores
 
 
+def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes, debug):
+    # filter embeddings based on classification confidence
+    token_ids = torch.arange(len(tokenizer)).cpu()
+    all_token_ids = token_ids.tolist()
+
+    for prefix in prefixes:
+        cache_file_name = (f"model={model.name_or_path.replace("/", "_")}"
+                           f"_target_class={target_class}"
+                           f"_confidence_threshold={confidence_threshold}"
+                           f"_prefix={prefix}.pt")
+        cache_file_path = os.path.join(cache_dir, cache_file_name)
+
+        if os.path.exists(cache_file_path):
+            token_ids_prefix = torch.load(cache_file_path)
+
+        else:
+            filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch, model,
+                                                                          tokenizer, target_class,
+                                                                          confidence_threshold, prefix)
+            token_ids_prefix = get_filtered_token_ids(tokenizer, TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE,
+                                                      filter_func)
+            torch.save(token_ids_prefix, cache_file_path)
+
+        token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
+
+    if token_ids.shape[0] == 0:
+        raise Exception("Filtered all tokens!")
+
+    if debug:
+        print(f"{len(token_ids)} tokens remaining after filtering")
+        filtered_out_token_ids = torch.tensor(np.setdiff1d(all_token_ids, token_ids))
+        filtered_out_words = tokenizer.batch_decode([filtered_out_token_ids])
+        print(f"Filtered the following tokens: {filtered_out_words}")
+
+    return token_ids.to(device=ta_device)
+
+
 def get_filtered_token_ids(tokenizer, batch_size, filter_func):
     """
     filter_func receives tensor of token_ids and returns a tensor of filtered_token_ids.
@@ -136,20 +177,23 @@ def _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, con
     return token_ids_batch[confidence_target_class < confidence_threshold]
 
 
-def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confidence_threshold, batch_size=1024, prefix=""):
-    filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, confidence_threshold, prefix)
-    return get_filtered_token_ids(tokenizer, batch_size, filter_func)
-
-
 def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type):
     candidates = tokenizer.batch_decode(token_ids_batch)
     scores = get_bert_max_score(candidates, word_refs, bert_model_type)
     return token_ids_batch[scores >= score_threshold]
 
 
-def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold, batch_size=4096, bert_model_type="microsoft/deberta-xlarge-mnli"):
-    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type)
-    return get_filtered_token_ids(tokenizer, batch_size, filter_func)
+def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold, debug,
+                                         batch_size=BERT_FILTER_DEFAULT_BATCH_SIZE,
+                                         bert_model_type="microsoft/deberta-xlarge-mnli"):
+    filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer,
+                                                                word_refs, score_threshold,
+                                                                bert_model_type)
+    remaining_token_ids = get_filtered_token_ids(tokenizer, batch_size, filter_func)
+    if debug:
+        remaining_words = tokenizer.batch_decode([remaining_token_ids])
+        print(f"The following tokens remained: {remaining_words}")
+    return remaining_token_ids
 
 
 def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold, debug=False):
@@ -180,3 +224,27 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold,
     # remove special token ids
     token_ids = np.setdiff1d(np.unique(token_ids),  tokenizer.all_special_ids)
     return torch.tensor(token_ids, device= ta_device)
+
+
+def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class, cache_dir, word_refs, debug=False):
+    if filter_method.by_target_class:
+        return get_filtered_token_ids_by_target_class(model=model,
+                                                      tokenizer=tokenizer,
+                                                      target_class=target_class,
+                                                      confidence_threshold=0.5,
+                                                      cache_dir=cache_dir,
+                                                      prefixes=DEFAULT_PREFIXES,
+                                                      debug=debug)
+
+    if filter_method.by_bert_score:
+        return get_filtered_token_ids_by_bert_score(tokenizer=tokenizer,
+                                                    word_refs=word_refs,
+                                                    score_threshold=0.8,
+                                                    debug=debug)
+
+    if filter_method.by_glove_score:
+        return get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
+                                                     word_refs=word_refs,
+                                                     score_threshold=0.6,
+                                                     debug=debug)
+    return torch.arange(model.token_embeddings.num_embeddings, device=ta_device)

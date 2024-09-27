@@ -5,6 +5,10 @@ from recipes import CharacterRouletteBlackBoxRandomChar, CharacterRouletteBlackB
 from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, \
     GCGAttackParams
 
+class FilterTokenIDsMethod(enum.Enum):
+    by_target_class = "by_target_class"
+    by_bert_score = "by_bert_score"
+    by_glove_score = "by_glove_score"
 
 class AttackName(enum.Enum):
     character_roulette_black_box_random_char = "character_roulette_black_box_random_char"
