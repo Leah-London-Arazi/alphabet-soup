@@ -87,7 +87,7 @@ class PEZGradientSearch(SearchMethod):
             nn_indices_grad = get_grad_wrt_func(self.model_wrapper,
                                                 nn_indices.unsqueeze(0),
                                                 label=self.target_class)['gradient']
-            prompt_embeds.grad = torch.tensor(nn_indices_grad[:prompt_len], device=ta_device)
+            prompt_embeds.grad = nn_indices_grad[:prompt_len].clone().detach().to(device=ta_device)
 
             optimizer.step()
             optimizer.zero_grad()

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 from consts import FilterTokenIDsMethod
 
@@ -27,7 +29,7 @@ class CharacterRouletteWhiteBoxAttackParams(AttackParams):
 
 class PEZAttackParams(AttackParams):
     lr: float = 0.4
-    filter_token_ids_method: FilterTokenIDsMethod
+    filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
 
 
@@ -35,5 +37,5 @@ class GCGAttackParams(AttackParams):
     max_retries_per_iter: int = 100
     top_k: int = 256
     beam_width: int = 1
-    filter_token_ids_method: FilterTokenIDsMethod
+    filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
