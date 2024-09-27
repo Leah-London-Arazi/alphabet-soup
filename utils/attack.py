@@ -9,7 +9,7 @@ import transformers
 import textattack
 from textattack.shared.utils import device as ta_device
 from textattack.models.wrappers import HuggingFaceModelWrapper
-from utils.defaults import DEFAULT_BATCH_SIZE
+from utils.defaults import BERT_FILTER_DEFAULT_BATCH_SIZE, TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE
 from utils.utils import random_sentence
 
 
@@ -109,7 +109,7 @@ def get_bert_max_score(candidates, word_refs, model_type):
     return scores
 
 
-def get_filtered_token_ids__multi_prefix(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes, debug):
+def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes, debug):
     # filter embeddings based on classification confidence
     all_token_ids = list(range(len(tokenizer)))
     token_ids = torch.tensor(all_token_ids).cpu()
@@ -125,12 +125,11 @@ def get_filtered_token_ids__multi_prefix(model, tokenizer, target_class, confide
             token_ids_prefix = torch.load(cache_file_path)
 
         else:
-            token_ids_prefix = (
-                get_filtered_token_ids_by_target_class(model=model,
-                                                       tokenizer=tokenizer,
-                                                       target_class=target_class,
-                                                       confidence_threshold=confidence_threshold,
-                                                       prefix=prefix))
+            filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch, model,
+                                                                          tokenizer, target_class,
+                                                                          confidence_threshold, prefix)
+            token_ids_prefix = get_filtered_token_ids(tokenizer, TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE,
+                                                      filter_func)
             torch.save(token_ids_prefix, cache_file_path)
 
         token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
@@ -176,11 +175,6 @@ def _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, con
     return token_ids_batch[confidence_target_class < confidence_threshold]
 
 
-def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confidence_threshold, batch_size=1024, prefix=""):
-    filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, confidence_threshold, prefix)
-    return get_filtered_token_ids(tokenizer, batch_size, filter_func)
-
-
 def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold, bert_model_type, debug):
     candidates = tokenizer.batch_decode(token_ids_batch)
     scores = get_bert_max_score(candidates, word_refs, bert_model_type)
@@ -193,7 +187,7 @@ def _filter_by_bert_score(token_ids_batch, tokenizer, word_refs, score_threshold
 
 
 def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold,
-                                         batch_size=DEFAULT_BATCH_SIZE,
+                                         batch_size=BERT_FILTER_DEFAULT_BATCH_SIZE,
                                          bert_model_type="microsoft/deberta-xlarge-mnli",
                                          debug=False):
     filter_func = lambda token_ids_batch: _filter_by_bert_score(token_ids_batch, tokenizer,

@@ -11,7 +11,7 @@ from textattack.shared.utils import device as ta_device
 from utils.attack import (get_filtered_token_ids_by_glove_score,
                           get_grad_wrt_func,
                           get_filtered_token_ids_by_bert_score,
-                          get_filtered_token_ids__multi_prefix)
+                          get_filtered_token_ids_by_target_class)
 from utils.defaults import DEFAULT_CACHE_DIR, DEFAULT_PREFIXES
 from utils.utils import create_cache_dir
 
@@ -73,13 +73,13 @@ class PEZGradientSearch(SearchMethod):
 
         # filter embeddings based on classification confidence
         if self.filter_by_target_class:
-            token_ids = get_filtered_token_ids__multi_prefix(model=self.model,
-                                                             tokenizer=self.tokenizer,
-                                                             target_class=self.target_class,
-                                                             confidence_threshold=0.5,
-                                                             cache_dir=self.cache_dir,
-                                                             prefixes=DEFAULT_PREFIXES,
-                                                             debug=self.debug).to(device=ta_device)
+            token_ids = get_filtered_token_ids_by_target_class(model=self.model,
+                                                               tokenizer=self.tokenizer,
+                                                               target_class=self.target_class,
+                                                               confidence_threshold=0.5,
+                                                               cache_dir=self.cache_dir,
+                                                               prefixes=DEFAULT_PREFIXES,
+                                                               debug=self.debug).to(device=ta_device)
 
         elif self.filter_by_bert_score:
             token_ids = get_filtered_token_ids_by_bert_score(tokenizer=self.tokenizer,

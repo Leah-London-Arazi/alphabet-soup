@@ -1,7 +1,7 @@
 import torch
 from textattack.shared import AttackedText
 from textattack.transformations import Transformation
-from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score, get_filtered_token_ids__multi_prefix
+from utils.attack import get_grad_wrt_func, get_filtered_token_ids_by_glove_score, get_filtered_token_ids_by_target_class
 from textattack.shared.utils import device as ta_device
 from utils.defaults import DEFAULT_PREFIXES, DEFAULT_CACHE_DIR
 from utils.utils import create_cache_dir
@@ -30,7 +30,7 @@ class GCGRandomTokenSwap(Transformation):
                                                   device=ta_device)
 
         if filter_by_target_class:
-            self.replacement_token_ids = get_filtered_token_ids__multi_prefix(
+            self.replacement_token_ids = get_filtered_token_ids_by_target_class(
                 model=self.model,
                 tokenizer=self.tokenizer,
                 target_class=self.target_class,
