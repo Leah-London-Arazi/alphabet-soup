@@ -111,8 +111,8 @@ def get_bert_max_score(candidates, word_refs, model_type):
 
 def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confidence_threshold, cache_dir, prefixes, debug):
     # filter embeddings based on classification confidence
-    all_token_ids = list(range(len(tokenizer)))
-    token_ids = torch.tensor(all_token_ids).cpu()
+    token_ids = torch.arange(len(tokenizer)).cpu()
+    all_token_ids = token_ids.tolist()
 
     for prefix in prefixes:
         cache_file_name = (f"model={model.name_or_path.replace("/", "_")}"
