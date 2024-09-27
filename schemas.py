@@ -22,8 +22,7 @@ class CharacterRouletteBlackBoxAttackParams(AttackParams):
 
 
 class CharacterRouletteWhiteBoxAttackParams(AttackParams):
-    top_n: int = 1
-    num_random_tokens: int = 500
+    top_n: int = 3
     beam_width: int = 10
 
 
