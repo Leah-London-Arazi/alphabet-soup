@@ -1,5 +1,5 @@
 import yaml
-from textattack.metrics import Perplexity
+from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from munch import munchify
 import utils.utils
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
@@ -25,6 +25,7 @@ def combine_dicts(d1, d2):
 def run_single_experiment(args, metrics):
     attack_results = []
     metrics_results = []
+    expr_times = []
     for _ in range(args.experiment_iterations):
         attack_name = AttackName(args.attack_name)
         attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
@@ -46,10 +47,13 @@ def run_single_experiment(args, metrics):
         else:
             init_text = args.initial_text
 
-        attack_results.append(run_attack(attack=attack, input_text=init_text))
+        expr_result, expr_time = run_attack(attack=attack, input_text=init_text)
+        attack_results.append(expr_result)
+        expr_times.append(expr_time)
 
     for metric in metrics:
         metrics_results.append(metric().calculate(attack_results))
+    metrics_results.append({"avg_attack_time_secs": round(sum(expr_times) / len(expr_times), 2)})
 
     return attack_results, metrics_results
 
@@ -63,4 +67,4 @@ def run_experiments(metrics):
         print(f"Metrics for {experiment_args.attack_name}: {metric_results}")
 
 if __name__ == '__main__':
-    run_experiments([Entropy, Perplexity])
+    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate])

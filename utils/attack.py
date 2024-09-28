@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 import bert_score
 import torch
 import numpy as np
@@ -31,9 +32,11 @@ def print_attack_result(attack_result):
 
 
 def run_attack(attack, input_text, label=1):
+    start = timer()
     attack_result = attack.attack(input_text, label)
+    end = timer()
     print_attack_result(attack_result)
-    return attack_result
+    return attack_result, end - start
 
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
