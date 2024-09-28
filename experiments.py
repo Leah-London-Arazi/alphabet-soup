@@ -1,7 +1,7 @@
 import yaml
 from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from munch import munchify
-import utils.utils
+from utils.utils import set_random_seed
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
 from utils.attack import run_attack
@@ -60,6 +60,7 @@ def run_single_experiment(args, metrics):
 
 
 def run_experiments(metrics):
+    set_random_seed()
     config = read_yaml("config.yaml")
     default_config = config.defaults
     for experiment_config in config.experiments:
