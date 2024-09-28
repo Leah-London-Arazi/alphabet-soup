@@ -76,6 +76,9 @@ class GCGRandomTokenSwap(Transformation):
 
         loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
 
+        best_input_ids = input_ids.clone().detach().to(device=ta_device)
+        best_score = 0
+
         for _ in range(self.max_retries_per_iter):
             new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
 
@@ -84,8 +87,12 @@ class GCGRandomTokenSwap(Transformation):
             new_score = self.goal_function._get_score(logits.squeeze(0), None)
             if new_score > curr_score:
                 return new_input_ids
+            if new_score > best_score and self.tokenizer.decode(new_input_ids) != attacked_text.tokenizer_input:
+                best_input_ids = new_input_ids.clone().detach().to(device=ta_device)
+                best_score = new_score
 
         self.logger.warning("Reached max retries")
+        return best_input_ids
 
 
     def _get_transformations(self, current_text, indices_to_replace):
