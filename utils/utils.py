@@ -49,7 +49,3 @@ def create_dir(dir_name):
 def get_logger(name):
     logger = logging.getLogger(f"{ROOT_LOGGER_NAME}.{name}")
     return ModuleLogger(logger=logger)
-
-
-def get_root_logger():
-    return logging.getLogger(ROOT_LOGGER_NAME)
