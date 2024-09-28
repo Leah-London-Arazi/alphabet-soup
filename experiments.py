@@ -1,7 +1,7 @@
 import yaml
 from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from munch import munchify
-from utils.utils import set_random_seed
+from utils.utils import set_random_seed, random_sentence
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
 from utils.attack import run_attack
@@ -43,7 +43,7 @@ def run_single_experiment(args, metrics):
         attack = attack_recipe.get_attack()
 
         if args.rand_init_text:
-            init_text = utils.utils.random_sentence()
+            init_text = random_sentence()
         else:
             init_text = args.initial_text
 
