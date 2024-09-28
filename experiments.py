@@ -53,6 +53,7 @@ def run_single_experiment(args, metrics):
 
     for metric in metrics:
         metrics_results.append(metric().calculate(attack_results))
+
     metrics_results.append({"avg_attack_time_secs": round(sum(expr_times) / len(expr_times), 2)})
 
     return attack_results, metrics_results
