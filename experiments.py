@@ -30,7 +30,7 @@ def run_single_experiment(args, metrics):
         attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
         attack_params_cls = ATTACK_NAME_TO_PARAMS[attack_name]
         attack_params = attack_params_cls(**args.attack_params)
-    
+
         attack_recipe = attack_recipe_cls(model_name=args.model_name,
                                           targeted=args.targeted,
                                           target_class=args.target_class,
@@ -38,9 +38,9 @@ def run_single_experiment(args, metrics):
                                           query_budget=args.query_budget,
                                           debug=args.debug,
                                           attack_params=attack_params)
-    
+
         attack = attack_recipe.get_attack()
-    
+
         if args.rand_init_text:
             init_text = utils.utils.random_sentence()
         else:
