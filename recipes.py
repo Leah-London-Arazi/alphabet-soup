@@ -69,9 +69,9 @@ class CharacterRouletteBlackBox(AlphabetSoupAttackRecipe):
         super().__init__(attack_params=attack_params, **kwargs)
 
     def get_search_method(self):
-        GreedyWordSwapThresholdWIR(swap_threshold=self.attack_params.swap_threshold,
-                                   num_transformations_per_word=self.attack_params.num_transformations_per_word,
-                                   debug=self.debug)
+        return GreedyWordSwapThresholdWIR(swap_threshold=self.attack_params.swap_threshold,
+                                          num_transformations_per_word=self.attack_params.num_transformations_per_word,
+                                          debug=self.debug)
 
 
 class CharacterRouletteBlackBoxRandomChar(CharacterRouletteBlackBox):
