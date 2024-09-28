@@ -130,3 +130,4 @@ sentence_transformers==2.2.2
 gensim==4.3.3
 emoji==0.6.0
 pydantic==2.9.2
+omegaconf==2.3.0

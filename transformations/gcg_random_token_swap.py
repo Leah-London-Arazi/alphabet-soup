@@ -14,6 +14,7 @@ class GCGRandomTokenSwap(Transformation):
                  max_retries_per_iter,
                  top_k,
                  word_refs,
+                 score_threshold,
                  num_random_tokens,
                  filter_token_ids_method,
                  cache_dir=DEFAULT_CACHE_DIR,
@@ -43,8 +44,8 @@ class GCGRandomTokenSwap(Transformation):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,)
-
+                                                score_threshold=score_threshold,
+                                                num_random_tokens=num_random_tokens)
     @property
     def is_black_box(self):
         return False

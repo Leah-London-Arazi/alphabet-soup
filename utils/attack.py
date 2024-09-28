@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 import bert_score
 import torch
 import numpy as np
@@ -31,8 +32,11 @@ def print_attack_result(attack_result):
 
 
 def run_attack(attack, input_text, label=1):
+    start = timer()
     attack_result = attack.attack(input_text, label)
+    end = timer()
     print_attack_result(attack_result)
+    return attack_result, end - start
 
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
@@ -116,7 +120,7 @@ def get_bert_max_score(candidates, word_refs, model_type):
 def _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, confidence_threshold, prefix):
     sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
     sentences_batch_padded = tokenizer(sentences_batch,
-                                       add_special_tokens=True,
+                                       add_special_tokens=False,
                                        return_tensors="pt",
                                        padding=True,
                                        truncation=True).to(device=ta_device)
@@ -222,8 +226,7 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold)
 
 
 def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class,
-                           cache_dir, word_refs, num_random_tokens=0):
-
+                           cache_dir, word_refs, score_threshold, num_random_tokens=0):
     if filter_method == FilterTokenIDsMethod.by_target_class:
         token_ids = get_filtered_token_ids_by_target_class(model=model,
                                                       tokenizer=tokenizer,
@@ -235,12 +238,12 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
     elif filter_method == FilterTokenIDsMethod.by_bert_score:
         token_ids = get_filtered_token_ids_by_bert_score(tokenizer=tokenizer,
                                                     word_refs=word_refs,
-                                                    score_threshold=0.8,)
+                                                    score_threshold=score_threshold)
 
     elif filter_method == FilterTokenIDsMethod.by_glove_score:
         token_ids = get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
                                                      word_refs=word_refs,
-                                                     score_threshold=0.7,)
+                                                     score_threshold=score_threshold)
 
     elif filter_method == FilterTokenIDsMethod.by_random_tokens:
         token_ids = get_random_tokens(tokenizer, num_random_tokens)
