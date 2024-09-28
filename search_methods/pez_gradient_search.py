@@ -12,7 +12,7 @@ from textattack.shared.utils import device as ta_device
 from utils.attack import (get_grad_wrt_func,
                           get_filtered_token_ids)
 from utils.defaults import DEFAULT_CACHE_DIR
-from utils.utils import create_dir
+from utils.utils import create_dir, get_logger
 
 
 class PEZGradientSearch(SearchMethod):
@@ -24,8 +24,7 @@ class PEZGradientSearch(SearchMethod):
                  word_refs,
                  num_random_tokens,
                  filter_token_ids_method,
-                 cache_dir=DEFAULT_CACHE_DIR,
-                 debug=False):
+                 cache_dir=DEFAULT_CACHE_DIR):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -48,7 +47,7 @@ class PEZGradientSearch(SearchMethod):
         self.cache_dir = cache_dir
         create_dir(self.cache_dir)
 
-        self.debug = debug
+        self.logger = get_logger(self.__module__)
 
         self.filter_token_ids_method = filter_token_ids_method
         self.token_ids = get_filtered_token_ids(filter_method=self.filter_token_ids_method,
@@ -57,18 +56,17 @@ class PEZGradientSearch(SearchMethod):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,
-                                                debug=self.debug)
+                                                num_random_tokens=num_random_tokens,)
+
 
     def perform_search(self, initial_result):
-        if self.debug:
-            print(f"initial_result: {initial_result}")
         # we optimize the tokens directly so we may receive an "irreversible" sequence of tokens,
         # meaning, after decoding and encoding it again the tokens would not restore.
 
-        attacked_text = initial_result.attacked_text
+        self.logger.log_result(result=initial_result)
 
         # init
+        attacked_text = initial_result.attacked_text
         text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=0)
@@ -98,10 +96,9 @@ class PEZGradientSearch(SearchMethod):
             results, exhausted_queries = self.get_goal_results([AttackedText(text_input=modified_text)])
             cur_result = results[0]
 
-            i += 1
+            self.logger.log_result(i=i, result=cur_result)
 
-            if self.debug:
-                print(f"iteration: {i}, cur_result: {cur_result}")
+            i += 1
 
         return cur_result
 

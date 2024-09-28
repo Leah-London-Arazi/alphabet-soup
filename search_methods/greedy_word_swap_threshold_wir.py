@@ -5,24 +5,24 @@
 from textattack.goal_function_results import GoalFunctionResultStatus
 from textattack.search_methods import GreedyWordSwapWIR
 
+from utils.utils import get_logger
+
 
 class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
-    def __init__(self, wir_method="unk", unk_token="[UNK]", swap_threshold=0.0, num_transformations_per_word=1,
-                 debug=False):
+    def __init__(self, wir_method="unk", unk_token="[UNK]", swap_threshold=0.0, num_transformations_per_word=1):
         super().__init__(wir_method=wir_method, unk_token=unk_token)
         self.swap_threshold = swap_threshold
         self.num_transformation_per_word = num_transformations_per_word
-        self.debug = debug
+        self.logger = get_logger(self.__module__)
 
     def perform_search(self, initial_result):
         attacked_text = initial_result.attacked_text
         index_order, exhausted_queries = self._get_index_order(attacked_text)
+        self.logger.log_result(result=initial_result)
+
         cur_result = initial_result
 
         i = 0
-
-        if self.debug:
-            print(f"initial_result: {cur_result}")
 
         while not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
             for _ in range(self.num_transformation_per_word):
@@ -45,9 +45,11 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
                     cur_result = results[0]
                 else:
                     continue
+
+            self.logger.log_result(i=i, result=cur_result)
+
             i += 1
-            if self.debug:
-                print(f"cur_result: {cur_result}")
+
             # After traversing the input text, try again
             if i >= len(index_order):
                 return self.perform_search(cur_result)

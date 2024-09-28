@@ -4,7 +4,7 @@ from textattack.transformations import Transformation
 from utils.attack import get_grad_wrt_func, get_filtered_token_ids
 from textattack.shared.utils import device as ta_device
 from utils.defaults import DEFAULT_CACHE_DIR
-from utils.utils import create_dir
+from utils.utils import create_dir, get_logger
 
 
 class GCGRandomTokenSwap(Transformation):
@@ -34,7 +34,7 @@ class GCGRandomTokenSwap(Transformation):
 
         # filter tokens using glove score
         self.token_embeddings = self.model.get_input_embeddings()
-        self.debug = debug
+        self.logger = get_logger(self.__module__)
 
         self.filter_token_ids_method = filter_token_ids_method
         self.token_ids = get_filtered_token_ids(filter_method=self.filter_token_ids_method,
@@ -43,8 +43,8 @@ class GCGRandomTokenSwap(Transformation):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,
-                                                debug=self.debug)
+                                                num_random_tokens=num_random_tokens,)
+
     @property
     def is_black_box(self):
         return False
@@ -85,7 +85,7 @@ class GCGRandomTokenSwap(Transformation):
             if new_score > curr_score:
                 return new_input_ids
 
-        raise Exception("Max retries exceeded")
+        self.logger.warning("Reached max retries")
 
 
     def _get_transformations(self, current_text, indices_to_replace):
