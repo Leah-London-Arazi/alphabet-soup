@@ -6,7 +6,7 @@ from consts import AttackName, ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS
 from utils.attack import run_attack
 from utils.defaults import ROOT_LOGGER_NAME
 from utils.utils import random_sentence
-
+from logging import _nameToLevel
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -25,8 +25,8 @@ def get_parser():
                         help="Attacked class in targeted mode")
     parser.add_argument("--query-budget", type=int, default=500,
                         help="Maximal queries allowed to the model")
-    parser.add_argument("--debug", type=bool, default=False,
-                        help="Run in debug mode")
+    parser.add_argument("--log-level", type=str, default="INFO",
+                        help="logging level")
     parser.add_argument("--attack-params", nargs="+", default=[],
                         help="Additional key=value parameters. "
                              "For lists, enter the values as a comma-separated strings.")
@@ -34,7 +34,13 @@ def get_parser():
     return parser
 
 
-def init_logger(level=logging.INFO):
+def init_logger(level_name):
+    try:
+        level = _nameToLevel[level_name]
+    except KeyError:
+        raise ValueError("Invalid logging level")
+
+    logging.basicConfig(level=level)
     logger = logging.getLogger(ROOT_LOGGER_NAME)
     logger.setLevel(level=level)
     logger.propagate = False
@@ -52,7 +58,7 @@ def main():
     args = parser.parse_args()
 
     # Logger
-    init_logger(level=logging.DEBUG if args.debug else logging.INFO)
+    init_logger(level_name=args.log_level)
 
     attack_recipe_cls = ATTACK_NAME_TO_RECIPE[args.attack_name]
     attack_params_cls = ATTACK_NAME_TO_PARAMS[args.attack_name]

@@ -174,10 +174,6 @@ def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confi
 
         token_ids = torch.tensor(np.intersect1d(token_ids_prefix.cpu(), token_ids))
 
-    if token_ids.shape[0] == 0:
-        raise Exception("Filtered all tokens!")
-
-    logger.debug(f"{len(token_ids)} tokens remaining after filtering")
     logger.debug(f"Filtered the following tokens: "
                  f"{tokenizer.batch_decode([torch.tensor(np.setdiff1d(all_token_ids, token_ids))])}")
 
@@ -191,7 +187,7 @@ def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold,
                                                                 word_refs, score_threshold,
                                                                 bert_model_type)
     remaining_token_ids = filter_token_ids_by_func(tokenizer, batch_size, filter_func)
-    logger.debug(f"The following tokens remained: {tokenizer.batch_decode([remaining_token_ids])}")
+
     return remaining_token_ids
 
 
@@ -209,15 +205,16 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold)
         if score >= score_threshold:
             cands.append(word)
 
-    logger.debug(f"The following {len(cands)} tokens remained: {cands}")
-
     # add space to each word
     cands += [f" {w}" for w in cands]
-
-    token_ids = tokenizer(cands, add_special_tokens=False,
-                                 return_tensors="np",
-                                 padding=True,
-                                 truncation=True).input_ids.flatten()
+    
+    if len(cands) == 0:
+        token_ids = []
+    else:
+        token_ids = tokenizer(cands, add_special_tokens=False,
+                                     return_tensors="np",
+                                     padding=True,
+                                     truncation=True).input_ids.flatten()
 
     # remove special token ids
     token_ids = np.setdiff1d(np.unique(token_ids),  tokenizer.all_special_ids)
@@ -226,28 +223,39 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold)
 
 def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class,
                            cache_dir, word_refs, num_random_tokens=0):
+
     if filter_method == FilterTokenIDsMethod.by_target_class:
-        return get_filtered_token_ids_by_target_class(model=model,
+        token_ids = get_filtered_token_ids_by_target_class(model=model,
                                                       tokenizer=tokenizer,
                                                       target_class=target_class,
                                                       confidence_threshold=0.5,
                                                       cache_dir=cache_dir,
                                                       prefixes=DEFAULT_PREFIXES,)
 
-    if filter_method == FilterTokenIDsMethod.by_bert_score:
-        return get_filtered_token_ids_by_bert_score(tokenizer=tokenizer,
+    elif filter_method == FilterTokenIDsMethod.by_bert_score:
+        token_ids = get_filtered_token_ids_by_bert_score(tokenizer=tokenizer,
                                                     word_refs=word_refs,
                                                     score_threshold=0.8,)
 
-    if filter_method == FilterTokenIDsMethod.by_glove_score:
-        return get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
+    elif filter_method == FilterTokenIDsMethod.by_glove_score:
+        token_ids = get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
                                                      word_refs=word_refs,
                                                      score_threshold=0.7,)
 
-    if filter_method == FilterTokenIDsMethod.by_random_tokens:
-        return get_random_tokens(tokenizer, num_random_tokens)
-    return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
+    elif filter_method == FilterTokenIDsMethod.by_random_tokens:
+        token_ids = get_random_tokens(tokenizer, num_random_tokens)
 
+    else:
+        token_ids = torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
+
+    if token_ids.shape[0] == 0:
+        logger.error("Filtered out all tokens!")
+
+    else:
+        logger.debug(f"{len(token_ids)} tokens remaining after filtering")
+        logger.debug(f"The following tokens remained: {tokenizer.batch_decode([token_ids])}")
+
+    return token_ids
 
 def get_random_tokens(tokenizer, num_tokens):
     vocab_size = len(tokenizer)

@@ -6,19 +6,21 @@
 import numpy as np
 
 from textattack.goal_function_results import GoalFunctionResultStatus
-from textattack.search_methods import SearchMethod
+from textattack.search_methods import BeamSearch as BaseBeamSearch
 
 from utils.utils import get_logger
 
 
-class BeamSearch(SearchMethod):
-    def __init__(self, beam_width=8):
-        self.beam_width = beam_width
+class BeamSearch(BaseBeamSearch):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.logger = get_logger(self.__module__)
 
 
     def perform_search(self, initial_result):
         beam = [initial_result.attacked_text]
+        self.logger.log_result(result=initial_result)
+
         best_result = initial_result
         i = 0
 
@@ -50,10 +52,3 @@ class BeamSearch(SearchMethod):
             beam = [potential_next_beam[i] for i in best_indices]
 
         return best_result
-
-    @property
-    def is_black_box(self):
-        return True
-
-    def extra_repr_keys(self):
-        return ["beam_width"]

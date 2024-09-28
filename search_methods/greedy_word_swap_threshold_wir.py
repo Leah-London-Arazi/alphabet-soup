@@ -18,12 +18,13 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
     def perform_search(self, initial_result):
         attacked_text = initial_result.attacked_text
         index_order, exhausted_queries = self._get_index_order(attacked_text)
+        self.logger.log_result(result=initial_result)
+
         cur_result = initial_result
+
         i = 0
 
         while not exhausted_queries and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED:
-            self.logger.log_result(i=i, result=cur_result)
-
             for _ in range(self.num_transformation_per_word):
                 transformed_text_candidates = self.get_transformations(
                     cur_result.attacked_text,
@@ -44,6 +45,9 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
                     cur_result = results[0]
                 else:
                     continue
+
+            self.logger.log_result(i=i, result=cur_result)
+
             i += 1
 
             # After traversing the input text, try again

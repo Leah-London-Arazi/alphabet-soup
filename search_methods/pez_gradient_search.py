@@ -63,9 +63,10 @@ class PEZGradientSearch(SearchMethod):
         # we optimize the tokens directly so we may receive an "irreversible" sequence of tokens,
         # meaning, after decoding and encoding it again the tokens would not restore.
 
-        attacked_text = initial_result.attacked_text
+        self.logger.log_result(result=initial_result)
 
         # init
+        attacked_text = initial_result.attacked_text
         text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=0)
@@ -80,7 +81,6 @@ class PEZGradientSearch(SearchMethod):
         while (i < self.max_iter
                and not exhausted_queries
                and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED):
-            self.logger.log_result(i=i, result=cur_result)
             nn_indices = PEZGradientSearch._nn_project(prompt_embeds, filtered_embedding_matrix, self.token_ids)
 
             prompt_len = prompt_embeds.shape[0]
@@ -95,6 +95,8 @@ class PEZGradientSearch(SearchMethod):
             modified_text = self.tokenizer.decode(nn_indices)
             results, exhausted_queries = self.get_goal_results([AttackedText(text_input=modified_text)])
             cur_result = results[0]
+
+            self.logger.log_result(i=i, result=cur_result)
 
             i += 1
 
