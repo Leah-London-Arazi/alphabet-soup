@@ -1,4 +1,5 @@
 defaults:
+  model_name: cardiffnlp/twitter-roberta-base-sentiment-latest
   confidence_threshold: 0.9
   debug: True
   query_budget: 100
@@ -8,8 +9,18 @@ defaults:
   experiment_iterations: 1
 
 experiments:
+  - attack_name: character_roulette_black_box_random_char
+    targeted: True
+    target_class: 2
+    experiment_iterations: 10
+  - attack_name: character_roulette_black_box_random_word
+    targeted: True
+    target_class: 0
+  - attack_name: character_roulette_white_box
+    targeted: True
+    target_class: 0
+    experiment_iterations: 2
   - attack_name: pez
-    model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
     rand_init_text: True
     targeted: True
     target_class: 0
@@ -17,7 +28,6 @@ experiments:
       filter_token_ids_method: by_glove_score
       word_refs: [food, cheese, drink, eat, fruit, vegetable, meat, lettuce, apple]
   - attack_name: gcg
-    model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
     rand_init_text: False
     targeted: True
     target_class: 2
