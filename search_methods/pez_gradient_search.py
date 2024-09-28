@@ -12,7 +12,7 @@ from textattack.shared.utils import device as ta_device
 from utils.attack import (get_grad_wrt_func,
                           get_filtered_token_ids)
 from utils.defaults import DEFAULT_CACHE_DIR
-from utils.utils import create_dir
+from utils.utils import create_dir, get_logger
 
 
 class PEZGradientSearch(SearchMethod):
@@ -24,8 +24,7 @@ class PEZGradientSearch(SearchMethod):
                  word_refs,
                  num_random_tokens,
                  filter_token_ids_method,
-                 cache_dir=DEFAULT_CACHE_DIR,
-                 debug=False):
+                 cache_dir=DEFAULT_CACHE_DIR):
         # Unwrap model wrappers. Need raw model for gradient.
         self.model = model_wrapper.model
 
@@ -48,7 +47,7 @@ class PEZGradientSearch(SearchMethod):
         self.cache_dir = cache_dir
         create_dir(self.cache_dir)
 
-        self.debug = debug
+        self.logger = get_logger(self.__module__)
 
         self.filter_token_ids_method = filter_token_ids_method
         self.token_ids = get_filtered_token_ids(filter_method=self.filter_token_ids_method,
@@ -57,12 +56,10 @@ class PEZGradientSearch(SearchMethod):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,
-                                                debug=self.debug)
+                                                num_random_tokens=num_random_tokens,)
+
 
     def perform_search(self, initial_result):
-        if self.debug:
-            print(f"initial_result: {initial_result}")
         # we optimize the tokens directly so we may receive an "irreversible" sequence of tokens,
         # meaning, after decoding and encoding it again the tokens would not restore.
 
@@ -83,6 +80,7 @@ class PEZGradientSearch(SearchMethod):
         while (i < self.max_iter
                and not exhausted_queries
                and cur_result.goal_status != GoalFunctionResultStatus.SUCCEEDED):
+            self.logger.log_result(i=i, result=cur_result)
             nn_indices = PEZGradientSearch._nn_project(prompt_embeds, filtered_embedding_matrix, self.token_ids)
 
             prompt_len = prompt_embeds.shape[0]
@@ -99,9 +97,6 @@ class PEZGradientSearch(SearchMethod):
             cur_result = results[0]
 
             i += 1
-
-            if self.debug:
-                print(f"iteration: {i}, cur_result: {cur_result}")
 
         return cur_result
 

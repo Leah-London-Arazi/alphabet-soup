@@ -3,6 +3,10 @@ import string
 from pathlib import Path
 import torch
 import numpy as np
+import logging
+
+from utils.module_logger import ModuleLogger
+from utils.defaults import ROOT_LOGGER_NAME
 
 
 # https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
@@ -40,3 +44,12 @@ def create_dir(dir_name):
     directory = Path(dir_name)
     directory.mkdir(parents=True, exist_ok=True)
     return dir_name
+
+
+def get_logger(name):
+    logger = logging.getLogger(f"{ROOT_LOGGER_NAME}.{name}")
+    return ModuleLogger(logger=logger)
+
+
+def get_root_logger():
+    return logging.getLogger(ROOT_LOGGER_NAME)

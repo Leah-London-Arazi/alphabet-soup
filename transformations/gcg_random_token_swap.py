@@ -43,8 +43,8 @@ class GCGRandomTokenSwap(Transformation):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,
-                                                debug=self.debug)
+                                                num_random_tokens=num_random_tokens,)
+
     @property
     def is_black_box(self):
         return False

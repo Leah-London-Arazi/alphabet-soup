@@ -5,7 +5,6 @@ from utils.utils import disable_warnings
 disable_warnings()
 
 import textattack
-from textattack.search_methods import GreedySearch, BeamSearch
 from textattack.transformations import CompositeTransformation, WordSwapRandomCharacterSubstitution, \
     WordSwapRandomCharacterDeletion, WordSwapRandomCharacterInsertion, WordSwapNeighboringCharacterSwap
 
@@ -13,6 +12,7 @@ from search_methods.pez_gradient_search import PEZGradientSearch
 from transformations.gcg_random_token_swap import GCGRandomTokenSwap
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted, IncreaseConfidenceUntargeted
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
+from search_methods.beam_search import BeamSearch
 from transformations.nop import NOP
 from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap
 from transformations.word_swap_random_word import WordSwapRandomWord
@@ -21,13 +21,12 @@ from utils.attack import get_model_wrapper
 
 class AlphabetSoupAttackRecipe:
     def __init__(self, model_name: str, targeted: bool, target_class: int, query_budget: int,
-                 confidence_threshold: float, debug: bool, attack_params: BaseModel):
+                 confidence_threshold: float, attack_params: BaseModel):
         self.model_name = model_name
         self.targeted = targeted
         self.target_class = target_class
         self.query_budget = query_budget
         self.confidence_threshold = confidence_threshold
-        self.debug = debug
         self.attack_params = attack_params
 
     @property
@@ -51,7 +50,7 @@ class AlphabetSoupAttackRecipe:
         return NOP()
 
     def get_search_method(self):
-        return GreedySearch()
+        return BeamSearch(beam_width=1)
 
     def get_attack(self):
         return textattack.Attack(self.get_goal_function(),
@@ -70,8 +69,7 @@ class CharacterRouletteBlackBox(AlphabetSoupAttackRecipe):
 
     def get_search_method(self):
         GreedyWordSwapThresholdWIR(swap_threshold=self.attack_params.swap_threshold,
-                                   num_transformations_per_word=self.attack_params.num_transformations_per_word,
-                                   debug=self.debug)
+                                   num_transformations_per_word=self.attack_params.num_transformations_per_word)
 
 
 class CharacterRouletteBlackBoxRandomChar(CharacterRouletteBlackBox):
@@ -114,8 +112,7 @@ class PEZ(AlphabetSoupAttackRecipe):
                                  max_iter=self.query_budget,
                                  filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                  word_refs=self.attack_params.word_refs,
-                                 num_random_tokens=self.attack_params.num_random_tokens,
-                                 debug=self.debug,)
+                                 num_random_tokens=self.attack_params.num_random_tokens)
 
     @property
     def is_targeted_only(self):
@@ -127,7 +124,7 @@ class GCG(AlphabetSoupAttackRecipe):
         super().__init__(attack_params=attack_params, **kwargs)
 
     def get_search_method(self):
-        return GreedySearch()
+        return BeamSearch(beam_width=1)
 
     def get_transformation(self):
         return GCGRandomTokenSwap(self.model_wrapper,
@@ -136,5 +133,4 @@ class GCG(AlphabetSoupAttackRecipe):
                                   filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                   word_refs=self.attack_params.word_refs,
                                   top_k=self.attack_params.top_k,
-                                  num_random_tokens=self.attack_params.num_random_tokens,
-                                  debug=self.debug,)
+                                  num_random_tokens=self.attack_params.num_random_tokens,)

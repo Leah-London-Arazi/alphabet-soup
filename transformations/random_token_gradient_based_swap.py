@@ -40,7 +40,7 @@ class RandomTokenGradientBasedSwap(Transformation):
                                             label=self.target_class)
         else:
             grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
-        emb_grad = torch.tensor(grad_output["gradient"])
+        emb_grad = grad_output["gradient"].clone().detach()
 
         # grad differences between all tokens and original tokens
         diffs = torch.zeros(num_tokens_in_text, len(self.tokenizer))

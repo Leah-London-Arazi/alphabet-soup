@@ -1,6 +1,11 @@
 import argparse
+import logging
+import sys
+
 from consts import AttackName, ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS
 from utils.attack import run_attack
+from utils.defaults import ROOT_LOGGER_NAME
+from utils.utils import random_sentence
 
 
 def get_parser():
@@ -12,6 +17,8 @@ def get_parser():
     parser.add_argument("--model-name", type=str,
                         default="cardiffnlp/twitter-roberta-base-sentiment-latest",
                         help="HuggingFace model name")
+    parser.add_argument("--input-text", type=str, default=random_sentence(),
+                        help="Initial attacked text, the default is a random sentence")
     parser.add_argument("--targeted", type=bool, default=True,
                         help="Is targeted attack")
     parser.add_argument("--target-class", type=int, default=0,
@@ -27,11 +34,26 @@ def get_parser():
     return parser
 
 
+def init_logger(level=logging.INFO):
+    logger = logging.getLogger(ROOT_LOGGER_NAME)
+    logger.setLevel(level=level)
+    logger.propagate = False
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s\n%(message)s\n',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+
 def main():
     parser = get_parser()
 
     # Parse the arguments
     args = parser.parse_args()
+
+    # Logger
+    init_logger(level=logging.DEBUG if args.debug else logging.INFO)
+
     attack_recipe_cls = ATTACK_NAME_TO_RECIPE[args.attack_name]
     attack_params_cls = ATTACK_NAME_TO_PARAMS[args.attack_name]
 
@@ -42,11 +64,10 @@ def main():
                                       target_class=args.target_class,
                                       confidence_threshold=args.confidence_threshold,
                                       query_budget=args.query_budget,
-                                      debug=args.debug,
-                                      attack_params=attack_params)
+                                      attack_params=attack_params,)
 
     attack = attack_recipe.get_attack()
-    run_attack(attack=attack)
+    run_attack(attack=attack, input_text=args.input_text)
 
 
 if __name__ == '__main__':
