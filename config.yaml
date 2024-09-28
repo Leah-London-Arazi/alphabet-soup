@@ -1,5 +1,6 @@
 defaults:
-  model_name: cardiffnlp/twitter-roberta-base-sentiment-latest
+  model_names:
+    - cardiffnlp/twitter-roberta-base-sentiment-latest
   targeted: True
   target_class: 0
   confidence_threshold: 0.9
