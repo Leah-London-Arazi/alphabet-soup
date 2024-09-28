@@ -26,7 +26,7 @@ def run_single_experiment(args, metrics):
     attack_results = []
     metrics_results = []
     expr_times = []
-    for _ in range(args.experiment_iterations):
+    for _ in range(args.num_repetitions):
         attack_name = AttackName(args.attack_name)
         attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
         attack_params_cls = ATTACK_NAME_TO_PARAMS[attack_name]

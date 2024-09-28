@@ -8,14 +8,14 @@ defaults:
   rand_init_text: True
   attack_params: {}
   initial_text: "! ! ! ! ! ! ! ! ! !"
-  experiment_iterations: 1
+  num_repetitions: 1
 
 experiments:
   - attack_name: character_roulette_black_box_random_char
-    experiment_iterations: 10
+    num_repetitions: 10
   - attack_name: character_roulette_black_box_random_word
   - attack_name: character_roulette_white_box
-    experiment_iterations: 2
+    num_repetitions: 2
     rand_init_text: False
     query_budget: 1000
   - attack_name: pez
@@ -25,4 +25,4 @@ experiments:
       word_refs: [food, cheese, drink, eat, fruit, vegetable, meat, lettuce, apple]
   - attack_name: gcg
     rand_init_text: False
-    experiment_iterations: 5
+    num_repetitions: 5
