@@ -67,7 +67,12 @@ class PEZGradientSearch(SearchMethod):
 
         # init
         attacked_text = initial_result.attacked_text
-        text_ids = self.tokenizer(attacked_text.tokenizer_input, return_tensors='pt')["input_ids"].to(ta_device)
+        text_ids = self.tokenizer(attacked_text.tokenizer_input,
+                                  add_special_tokens=False,
+                                  return_tensors="pt",
+                                  padding=True,
+                                  truncation=True).input_ids.to(device=ta_device)
+
         prompt_embeds = self.token_embeddings(text_ids).squeeze().detach().to(ta_device)
         optimizer = torch.optim.AdamW([prompt_embeds], lr=self.lr, weight_decay=0)
         filtered_embedding_matrix = normalize_embeddings(self.token_embeddings(self.token_ids))

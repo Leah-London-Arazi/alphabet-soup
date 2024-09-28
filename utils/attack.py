@@ -116,7 +116,7 @@ def get_bert_max_score(candidates, word_refs, model_type):
 def _filter_by_target_class(token_ids_batch, model, tokenizer, target_class, confidence_threshold, prefix):
     sentences_batch = [f"{prefix} {word}" for word in tokenizer.batch_decode(token_ids_batch)]
     sentences_batch_padded = tokenizer(sentences_batch,
-                                       add_special_tokens=True,
+                                       add_special_tokens=False,
                                        return_tensors="pt",
                                        padding=True,
                                        truncation=True).to(device=ta_device)
