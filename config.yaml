@@ -1,0 +1,24 @@
+defaults:
+  confidence_threshold: 0.9
+  debug: True
+  query_budget: 100
+  rand_init_text: True
+  attack_params: {}
+  initial_text: "! ! ! ! ! ! ! ! ! !"
+  experiment_iterations: 1
+
+experiments:
+  - attack_name: pez
+    model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    rand_init_text: True
+    targeted: True
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [food, cheese, drink, eat, fruit, vegetable, meat, lettuce, apple]
+  - attack_name: gcg
+    model_name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    rand_init_text: False
+    targeted: True
+    target_class: 2
+    experiment_iterations: 5
