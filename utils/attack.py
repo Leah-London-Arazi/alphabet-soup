@@ -33,6 +33,7 @@ def print_attack_result(attack_result):
 def run_attack(attack, input_text, label=1):
     attack_result = attack.attack(input_text, label)
     print_attack_result(attack_result)
+    return attack_result
 
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
