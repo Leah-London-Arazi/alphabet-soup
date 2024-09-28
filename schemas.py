@@ -32,6 +32,7 @@ class PEZAttackParams(AttackParams):
     lr: float = 0.4
     filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
+    num_random_tokens: int = 10
 
 
 class GCGAttackParams(AttackParams):
@@ -39,3 +40,4 @@ class GCGAttackParams(AttackParams):
     top_k: int = 256
     filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
+    num_random_tokens: int = 10

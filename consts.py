@@ -4,6 +4,7 @@ class FilterTokenIDsMethod(enum.Enum):
     by_target_class = "by_target_class"
     by_bert_score = "by_bert_score"
     by_glove_score = "by_glove_score"
+    by_random_tokens = "by_random_tokens"
 
 
 class AttackName(enum.Enum):

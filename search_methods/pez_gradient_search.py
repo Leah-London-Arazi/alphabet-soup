@@ -22,6 +22,7 @@ class PEZGradientSearch(SearchMethod):
                  target_class,
                  max_iter,
                  word_refs,
+                 num_random_tokens,
                  filter_token_ids_method,
                  cache_dir=DEFAULT_CACHE_DIR,
                  debug=False):
@@ -56,6 +57,7 @@ class PEZGradientSearch(SearchMethod):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
+                                                num_random_tokens=num_random_tokens,
                                                 debug=self.debug)
 
     def perform_search(self, initial_result):

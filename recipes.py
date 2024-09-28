@@ -20,7 +20,8 @@ from utils.attack import get_model_wrapper
 
 
 class AlphabetSoupAttackRecipe:
-    def __init__(self, model_name: str, targeted: bool, target_class: int, query_budget: int, confidence_threshold: float, debug: bool, attack_params: BaseModel):
+    def __init__(self, model_name: str, targeted: bool, target_class: int, query_budget: int,
+                 confidence_threshold: float, debug: bool, attack_params: BaseModel):
         self.model_name = model_name
         self.targeted = targeted
         self.target_class = target_class
@@ -35,10 +36,10 @@ class AlphabetSoupAttackRecipe:
 
     def get_goal_function(self):
         if self.targeted:
-             return IncreaseConfidenceTargeted(self.model_wrapper,
-                                                   target_class=self.target_class,
-                                                   query_budget=self.query_budget,
-                                                   threshold=self.confidence_threshold)
+            return IncreaseConfidenceTargeted(self.model_wrapper,
+                                              target_class=self.target_class,
+                                              query_budget=self.query_budget,
+                                              threshold=self.confidence_threshold)
         return IncreaseConfidenceUntargeted(self.model_wrapper,
                                             query_budget=self.query_budget,
                                             threshold=self.confidence_threshold)
@@ -53,7 +54,10 @@ class AlphabetSoupAttackRecipe:
         return GreedySearch()
 
     def get_attack(self):
-        return textattack.Attack(self.get_goal_function(), self.get_constraints(), self.get_transformation(), self.get_search_method())
+        return textattack.Attack(self.get_goal_function(),
+                                 self.get_constraints(),
+                                 self.get_transformation(),
+                                 self.get_search_method())
 
     @property
     def is_targeted_only(self):
@@ -110,6 +114,7 @@ class PEZ(AlphabetSoupAttackRecipe):
                                  max_iter=self.query_budget,
                                  filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                  word_refs=self.attack_params.word_refs,
+                                 num_random_tokens=self.attack_params.num_random_tokens,
                                  debug=self.debug,)
 
     @property
@@ -131,4 +136,5 @@ class GCG(AlphabetSoupAttackRecipe):
                                   filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                   word_refs=self.attack_params.word_refs,
                                   top_k=self.attack_params.top_k,
+                                  num_random_tokens=self.attack_params.num_random_tokens,
                                   debug=self.debug,)
