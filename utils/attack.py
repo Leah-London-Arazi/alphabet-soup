@@ -222,8 +222,7 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold)
 
 
 def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer, target_class,
-                           cache_dir, word_refs, num_random_tokens=0):
-
+                           cache_dir, word_refs, score_threshold, num_random_tokens=0):
     if filter_method == FilterTokenIDsMethod.by_target_class:
         token_ids = get_filtered_token_ids_by_target_class(model=model,
                                                       tokenizer=tokenizer,
@@ -235,12 +234,12 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
     elif filter_method == FilterTokenIDsMethod.by_bert_score:
         token_ids = get_filtered_token_ids_by_bert_score(tokenizer=tokenizer,
                                                     word_refs=word_refs,
-                                                    score_threshold=0.8,)
+                                                    score_threshold=score_threshold)
 
     elif filter_method == FilterTokenIDsMethod.by_glove_score:
         token_ids = get_filtered_token_ids_by_glove_score(tokenizer=tokenizer,
                                                      word_refs=word_refs,
-                                                     score_threshold=0.7,)
+                                                     score_threshold=score_threshold)
 
     elif filter_method == FilterTokenIDsMethod.by_random_tokens:
         token_ids = get_random_tokens(tokenizer, num_random_tokens)

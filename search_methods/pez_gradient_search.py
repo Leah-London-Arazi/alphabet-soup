@@ -22,6 +22,7 @@ class PEZGradientSearch(SearchMethod):
                  target_class,
                  max_iter,
                  word_refs,
+                 score_threshold,
                  num_random_tokens,
                  filter_token_ids_method,
                  cache_dir=DEFAULT_CACHE_DIR):
@@ -56,8 +57,8 @@ class PEZGradientSearch(SearchMethod):
                                                 target_class=self.target_class,
                                                 cache_dir=self.cache_dir,
                                                 word_refs=word_refs,
-                                                num_random_tokens=num_random_tokens,)
-
+                                                score_threshold=score_threshold,
+                                                num_random_tokens=num_random_tokens)
 
     def perform_search(self, initial_result):
         # we optimize the tokens directly so we may receive an "irreversible" sequence of tokens,
