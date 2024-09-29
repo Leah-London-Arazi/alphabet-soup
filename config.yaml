@@ -8,7 +8,7 @@ defaults:
   query_budget: 100
   rand_init_text: True
   attack_params: {}
-  initial_text: "! ! ! ! ! ! ! ! ! !"
+  initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
   num_repetitions: 1
 
 experiments:
