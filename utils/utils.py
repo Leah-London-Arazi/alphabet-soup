@@ -66,3 +66,7 @@ def init_logger(level_name):
                                   datefmt='%Y-%m-%d %H:%M:%S')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+def get_root_logger():
+    return logging.getLogger(ROOT_LOGGER_NAME)
