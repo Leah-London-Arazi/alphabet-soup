@@ -36,7 +36,8 @@ def log_metrics(results, metrics, expr_time, args, experiment_number, logger):
             logger.error(f"Caught exception while calculating "
                          f"metrics in {args.attack_name} on {args.model_name}: {e}")
             continue
-    metrics_results.append({"avg_attack_time_secs": round(sum(expr_time) / len(expr_time), 2)})
+    if len(expr_time) > 0:
+        metrics_results.append({"avg_attack_time_secs": round(sum(expr_time) / len(expr_time), 2)})
 
     logger.info(f"Metric results for experiment number {experiment_number}: "
                 f"attack {args.attack_name} on {args.model_name}: {metrics_results}")
