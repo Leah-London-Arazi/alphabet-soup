@@ -9,6 +9,7 @@ from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from omegaconf import OmegaConf
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
+from metrics.time import Time
 from utils.attack import run_attack
 
 
@@ -27,17 +28,17 @@ def get_attack_recipe(args):
     return attack_recipe
 
 
-def log_metrics(results, metrics, expr_time, args, experiment_number, logger):
+def log_metrics(results, metrics, args, experiment_number, logger):
     metrics_results = []
     for metric in metrics:
         try:
-            metrics_results.append(metric().calculate(results))
+            metric_result = metric().calculate(results)
+            if metric_result:
+                metrics_results.append(metric_result)
         except Exception as e:
             logger.error(f"Caught exception while calculating "
                          f"metrics in {args.attack_name} on {args.model_name}: {e}")
             continue
-    if len(expr_time) > 0:
-        metrics_results.append({"avg_attack_time_secs": round(sum(expr_time) / len(expr_time), 2)})
 
     logger.info(f"Metric results for experiment number {experiment_number}: "
                 f"attack {args.attack_name} on {args.model_name}: {metrics_results}")
@@ -46,7 +47,6 @@ def log_metrics(results, metrics, expr_time, args, experiment_number, logger):
 def run_single_experiment(args, metrics, experiment_number):
     logger = get_root_logger()
     expr_results = []
-    expr_time = []
     logger.info(f"Running experiment number {experiment_number}: "
                 f"attack {args.attack_name} on {args.model_name} "
                 f"for {args.num_repetitions} repetitions")
@@ -59,17 +59,15 @@ def run_single_experiment(args, metrics, experiment_number):
             init_text = random_sentence()
         else:
             init_text = args.initial_text
-
         try:
-            expr_rep_result, expr_rep_time = run_attack(attack=attack, input_text=init_text)
+            expr_rep_result = run_attack(attack=attack, input_text=init_text)
         except Exception as e:
             logger.error(f"Caught exception while running "
                          f"attack {args.attack_name} on {args.model_name}: {e}")
             continue
         expr_results.append(expr_rep_result)
-        expr_time.append(expr_rep_time)
 
-    log_metrics(expr_results, metrics, expr_time, args, experiment_number, logger)
+    log_metrics(expr_results, metrics, args, experiment_number, logger)
 
 def run_experiments(metrics, config_file):
     set_random_seed()
@@ -93,7 +91,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate], args.config_file)
+    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time], args.config_file)
 
 
 if __name__ == '__main__':

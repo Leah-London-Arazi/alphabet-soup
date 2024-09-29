@@ -34,9 +34,9 @@ def print_attack_result(attack_result):
 def run_attack(attack, input_text, label=1):
     start = timer()
     attack_result = attack.attack(input_text, label)
-    end = timer()
+    attack_result.attack_time = timer() - start
     print_attack_result(attack_result)
-    return attack_result, end - start
+    return attack_result
 
 
 # Reimplement HuggingFaceModelWrapper method for gradient calculation.
