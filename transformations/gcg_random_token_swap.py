@@ -17,8 +17,7 @@ class GCGRandomTokenSwap(Transformation):
                  score_threshold,
                  num_random_tokens,
                  filter_token_ids_method,
-                 cache_dir=DEFAULT_CACHE_DIR,
-                 debug=False):
+                 cache_dir=DEFAULT_CACHE_DIR):
         super().__init__()
         self.model_wrapper = model_wrapper
         self.model = model_wrapper.model

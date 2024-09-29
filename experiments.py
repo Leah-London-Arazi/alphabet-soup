@@ -20,7 +20,6 @@ def get_attack_recipe(args):
                                       target_class=args.target_class,
                                       confidence_threshold=args.confidence_threshold,
                                       query_budget=args.query_budget,
-                                      debug=args.debug,
                                       attack_params=attack_params)
     return attack_recipe
 

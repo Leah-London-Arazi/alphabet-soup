@@ -4,7 +4,7 @@ defaults:
   targeted: True
   target_class: 0
   confidence_threshold: 0.9
-  debug: True
+  log_level: DEBUG
   query_budget: 100
   rand_init_text: True
   attack_params: {}
