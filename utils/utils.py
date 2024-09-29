@@ -6,7 +6,7 @@ import numpy as np
 import logging
 
 from utils.module_logger import ModuleLogger
-from utils.defaults import ROOT_LOGGER_NAME
+from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 
 
 # https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
@@ -26,9 +26,8 @@ def random_word(min_len=3, max_len=10):
     return word
 
 
-def random_sentence(min_len=3, max_len=10):
-    sen_length = random.randint(min_len, max_len)  # Random sentence length
-    return " ".join([random_word() for _ in range(sen_length)])
+def random_sentence(sentence_len=DEFAULT_RANDOM_SENTENCE_LENGTH):
+    return " ".join([random_word() for _ in range(sentence_len)])
 
 
 def set_random_seed(seed=0):
