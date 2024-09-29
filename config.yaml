@@ -8,11 +8,11 @@ defaults:
   target_class: 0
   confidence_threshold: 0.9
   log_level: DEBUG
-  query_budget: 100
+  query_budget: 1000
   rand_init_text: True
   attack_params: {}
   initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
-  num_repetitions: 1
+  num_repetitions: 500
 
 experiments:
   - attack_name: character_roulette_black_box_random_char
