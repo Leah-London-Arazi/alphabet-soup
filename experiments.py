@@ -1,7 +1,8 @@
-from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger
+from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, get_root_logger
 
 disable_warnings()
 
+from tqdm import trange
 from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from omegaconf import OmegaConf
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
@@ -23,14 +24,18 @@ def get_attack_recipe(args):
                                       attack_params=attack_params)
     return attack_recipe
 
-def run_single_experiment(args, metrics):
+def run_single_experiment(args, metrics, experiment_number):
+    logger = get_root_logger()
     attack_results = []
     experiment_metrics = {}
     for model_name in args.model_names:
         per_model_time = []
         per_model_metrics = []
         args.model_name = model_name
-        for _ in range(args.num_repetitions):
+        logger.info(f"Running experiment number {experiment_number}: "
+                    f"attack {args.attack_name} on {model_name} "
+                    f"for {args.num_repetitions} repetitions")
+        for _ in trange(args.num_repetitions):
             attack_recipe = get_attack_recipe(args)
             attack = attack_recipe.get_attack()
 
@@ -39,13 +44,22 @@ def run_single_experiment(args, metrics):
             else:
                 init_text = args.initial_text
 
-            expr_result, expr_time = run_attack(attack=attack, input_text=init_text)
+            try:
+                expr_result, expr_time = run_attack(attack=attack, input_text=init_text)
+            except Exception as e:
+                logger.error(f"Caught exception while running "
+                             f"attack {args.attack_name} on {model_name}: {e}")
+                continue
             attack_results.append(expr_result)
             per_model_time.append(expr_time)
 
         for metric in metrics:
-            per_model_metrics.append(metric().calculate(attack_results))
-
+            try:
+                per_model_metrics.append(metric().calculate(attack_results))
+            except Exception as e:
+                logger.error(f"Caught exception while calculating "
+                             f"metrics in {args.attack_name} on {model_name}: {e}")
+                continue
         per_model_metrics.append({"avg_attack_time_secs": round(sum(per_model_time) / len(per_model_time), 2)})
 
         experiment_metrics[model_name] = per_model_metrics
@@ -56,11 +70,12 @@ def run_experiments(metrics):
     set_random_seed()
     config = OmegaConf.load("config.yaml")
     init_logger(level_name=config.defaults.log_level)
-    for experiment_config in config.experiments:
+    for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
-        experiment_results = run_single_experiment(experiment_args, metrics)
+        experiment_results = run_single_experiment(experiment_args, metrics, experiment_num)
         for model_name, experiment_metrics in experiment_results.items():
             print(f"Metrics for {experiment_args.attack_name} on {model_name}: {experiment_metrics}")
+
 
 if __name__ == '__main__':
     run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate])
