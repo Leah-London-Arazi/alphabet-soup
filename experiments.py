@@ -26,47 +26,50 @@ def get_attack_recipe(args):
                                       attack_params=attack_params)
     return attack_recipe
 
+
+def log_metrics(results, metrics, expr_time, args, experiment_number, logger):
+    metrics_results = []
+    for metric in metrics:
+        try:
+            metrics_results.append(metric().calculate(results))
+        except Exception as e:
+            logger.error(f"Caught exception while calculating "
+                         f"metrics in {args.attack_name} on {args.model_name}: {e}")
+            continue
+    if len(expr_time) > 0:
+        metrics_results.append({"avg_attack_time_secs": round(sum(expr_time) / len(expr_time), 2)})
+
+    logger.info(f"Metric results for experiment number {experiment_number}: "
+                f"attack {args.attack_name} on {args.model_name}: {metrics_results}")
+
+
 def run_single_experiment(args, metrics, experiment_number):
     logger = get_root_logger()
-    attack_results = []
-    experiment_metrics = {}
-    for model_name in args.model_names:
-        per_model_time = []
-        per_model_metrics = []
-        args.model_name = model_name
-        logger.info(f"Running experiment number {experiment_number}: "
-                    f"attack {args.attack_name} on {model_name} "
-                    f"for {args.num_repetitions} repetitions")
-        for _ in trange(args.num_repetitions):
-            attack_recipe = get_attack_recipe(args)
-            attack = attack_recipe.get_attack()
+    expr_results = []
+    expr_time = []
+    logger.info(f"Running experiment number {experiment_number}: "
+                f"attack {args.attack_name} on {args.model_name} "
+                f"for {args.num_repetitions} repetitions")
+    for rep_i in trange(args.num_repetitions):
+        logger.debug(f"Experiment {experiment_number} repetition {rep_i}")
+        attack_recipe = get_attack_recipe(args)
+        attack = attack_recipe.get_attack()
 
-            if args.rand_init_text:
-                init_text = random_sentence()
-            else:
-                init_text = args.initial_text
+        if args.rand_init_text:
+            init_text = random_sentence()
+        else:
+            init_text = args.initial_text
 
-            try:
-                expr_result, expr_time = run_attack(attack=attack, input_text=init_text)
-            except Exception as e:
-                logger.error(f"Caught exception while running "
-                             f"attack {args.attack_name} on {model_name}: {e}")
-                continue
-            attack_results.append(expr_result)
-            per_model_time.append(expr_time)
+        try:
+            expr_rep_result, expr_rep_time = run_attack(attack=attack, input_text=init_text)
+        except Exception as e:
+            logger.error(f"Caught exception while running "
+                         f"attack {args.attack_name} on {args.model_name}: {e}")
+            continue
+        expr_results.append(expr_rep_result)
+        expr_time.append(expr_rep_time)
 
-        for metric in metrics:
-            try:
-                per_model_metrics.append(metric().calculate(attack_results))
-            except Exception as e:
-                logger.error(f"Caught exception while calculating "
-                             f"metrics in {args.attack_name} on {model_name}: {e}")
-                continue
-        per_model_metrics.append({"avg_attack_time_secs": round(sum(per_model_time) / len(per_model_time), 2)})
-
-        experiment_metrics[model_name] = per_model_metrics
-    return experiment_metrics
-
+    log_metrics(expr_results, metrics, expr_time, args, experiment_number, logger)
 
 def run_experiments(metrics, config_file):
     set_random_seed()
@@ -74,9 +77,9 @@ def run_experiments(metrics, config_file):
     init_logger(level_name=config.defaults.log_level)
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
-        experiment_results = run_single_experiment(experiment_args, metrics, experiment_num)
-        for model_name, experiment_metrics in experiment_results.items():
-            print(f"Metrics for {experiment_args.attack_name} on {model_name}: {experiment_metrics}")
+        for model_name in experiment_args.model_names:
+            experiment_args.model_name = model_name
+            run_single_experiment(experiment_args, metrics, experiment_num)
 
 
 def get_parser():
