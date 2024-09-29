@@ -1,3 +1,5 @@
+import argparse
+
 from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, get_root_logger
 
 disable_warnings()
@@ -66,9 +68,9 @@ def run_single_experiment(args, metrics, experiment_number):
     return experiment_metrics
 
 
-def run_experiments(metrics):
+def run_experiments(metrics, config_file):
     set_random_seed()
-    config = OmegaConf.load("config.yaml")
+    config = OmegaConf.load(config_file)
     init_logger(level_name=config.defaults.log_level)
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
@@ -77,5 +79,19 @@ def run_experiments(metrics):
             print(f"Metrics for {experiment_args.attack_name} on {model_name}: {experiment_metrics}")
 
 
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config-file", type=str, required=True,
+                        help="experiments configuration file")
+    return parser
+
+
+def main():
+    parser = get_parser()
+    args = parser.parse_args()
+
+    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate], args.config_file)
+
+
 if __name__ == '__main__':
-    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate])
+    main()

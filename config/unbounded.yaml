@@ -9,24 +9,28 @@ defaults:
   confidence_threshold: 0.9
   log_level: DEBUG
   query_budget: 1000
-  rand_init_text: True
   attack_params: {}
   initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
   num_repetitions: 500
 
 experiments:
   - attack_name: character_roulette_black_box_random_char
-    num_repetitions: 10
-  - attack_name: character_roulette_black_box_random_word
-  - attack_name: character_roulette_white_box
-    num_repetitions: 2
+    rand_init_text: True
+  - attack_name: character_roulette_black_box_random_char
     rand_init_text: False
-    query_budget: 1000
+  - attack_name: character_roulette_black_box_random_word
+    rand_init_text: True
+  - attack_name: character_roulette_black_box_random_word
+    rand_init_text: False
+  - attack_name: character_roulette_white_box
+    rand_init_text: True
+  - attack_name: character_roulette_white_box
+    rand_init_text: False
   - attack_name: pez
     rand_init_text: True
-    attack_params:
-      filter_token_ids_method: by_glove_score
-      word_refs: [food, cheese, drink, eat, fruit, vegetable, meat, lettuce, apple]
+  - attack_name: pez
+    rand_init_text: False
+  - attack_name: gcg
+    rand_init_text: True
   - attack_name: gcg
     rand_init_text: False
-    num_repetitions: 5

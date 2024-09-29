@@ -1,0 +1,99 @@
+defaults:
+  model_names:
+    - cardiffnlp/twitter-roberta-base-sentiment-latest
+    - finiteautomata/bertweet-base-sentiment-analysis
+  targeted: True
+  target_class: 0
+  confidence_threshold: 0.9
+  log_level: DEBUG
+  query_budget: 1000
+  attack_params: {}
+  initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
+  num_repetitions: 500
+
+experiments:
+  # PEZ
+  - attack_name: pez
+    rand_init_text: False
+    attack_params:
+      filter_token_ids_method: by_target_class
+  - attack_name: pez
+    rand_init_text: False
+    attack_params:
+      filter_token_ids_method: by_random_tokens
+      num_random_tokens: 50
+
+  # GCG
+  - attack_name: gcg
+    rand_init_text: False
+    attack_params:
+      filter_token_ids_method: by_target_class
+  - attack_name: gcg
+    rand_init_text: False
+    attack_params:
+      filter_token_ids_method: by_random_tokens
+      num_random_tokens: 50
+
+  # PEZ
+  - attack_name: pez
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [happy]
+  - attack_name: pez
+    rand_init_text: False
+    target_class: 2
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [fruit]
+  - attack_name: pez
+    rand_init_text: False
+    target_class: 2
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [fuck, shit, nazi]
+  - attack_name: pez
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [dog, cat, rabbit, mouse, lion, ant, animal]
+  - attack_name: pez
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [food, drink, meat, pasta, wine, cheese]
+
+  # GCG
+  - attack_name: gcg
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [happy]
+  - attack_name: gcg
+    rand_init_text: False
+    target_class: 2
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [fruit]
+  - attack_name: gcg
+    rand_init_text: False
+    target_class: 2
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [fuck, shit, nazi]
+  - attack_name: gcg
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [dog, cat, rabbit, mouse, lion, ant, animal]
+  - attack_name: gcg
+    rand_init_text: False
+    target_class: 0
+    attack_params:
+      filter_token_ids_method: by_glove_score
+      word_refs: [food, drink, meat, pasta, wine, cheese]
