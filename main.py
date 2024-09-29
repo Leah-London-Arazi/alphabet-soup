@@ -1,12 +1,8 @@
 import argparse
-import logging
-import sys
-
 from consts import AttackName, ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS
 from utils.attack import run_attack
-from utils.defaults import ROOT_LOGGER_NAME
-from utils.utils import random_sentence
-from logging import _nameToLevel
+from utils.utils import random_sentence, init_logger
+
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -32,23 +28,6 @@ def get_parser():
                              "For lists, enter the values as a comma-separated strings.")
 
     return parser
-
-
-def init_logger(level_name):
-    try:
-        level = _nameToLevel[level_name]
-    except KeyError:
-        raise ValueError("Invalid logging level")
-
-    logging.basicConfig(level=level)
-    logger = logging.getLogger(ROOT_LOGGER_NAME)
-    logger.setLevel(level=level)
-    logger.propagate = False
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s\n%(message)s\n',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
 
 def main():

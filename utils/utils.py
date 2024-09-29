@@ -4,7 +4,8 @@ from pathlib import Path
 import torch
 import numpy as np
 import logging
-
+from logging import _nameToLevel
+import sys
 from utils.module_logger import ModuleLogger
 from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 
@@ -48,3 +49,20 @@ def create_dir(dir_name):
 def get_logger(name):
     logger = logging.getLogger(f"{ROOT_LOGGER_NAME}.{name}")
     return ModuleLogger(logger=logger)
+
+
+def init_logger(level_name):
+    try:
+        level = _nameToLevel[level_name]
+    except KeyError:
+        raise ValueError("Invalid logging level")
+
+    logging.basicConfig(level=level)
+    logger = logging.getLogger(ROOT_LOGGER_NAME)
+    logger.setLevel(level=level)
+    logger.propagate = False
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(name)s\n%(message)s\n',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)

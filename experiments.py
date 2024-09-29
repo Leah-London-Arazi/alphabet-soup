@@ -1,9 +1,13 @@
+from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger
+
+disable_warnings()
+
 from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from omegaconf import OmegaConf
-from utils.utils import set_random_seed, random_sentence
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
 from utils.attack import run_attack
+
 
 def get_attack_recipe(args):
     attack_name = AttackName(args.attack_name)
@@ -52,6 +56,7 @@ def run_single_experiment(args, metrics):
 def run_experiments(metrics):
     set_random_seed()
     config = OmegaConf.load("config.yaml")
+    init_logger(level_name=config.defaults.log_level)
     for experiment_config in config.experiments:
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
         experiment_results = run_single_experiment(experiment_args, metrics)
