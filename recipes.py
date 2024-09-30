@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-
-from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, GCGAttackParams
+from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, \
+    GCGAttackParams, AttackParams
 from utils.utils import disable_warnings
 disable_warnings()
 
@@ -61,6 +61,11 @@ class AlphabetSoupAttackRecipe:
     @property
     def is_targeted_only(self):
         return False
+
+
+class Baseline(AlphabetSoupAttackRecipe):
+    def __init__(self, attack_params: AttackParams, **kwargs):
+        super().__init__(**kwargs, attack_params=attack_params)
 
 
 class CharacterRouletteBlackBox(AlphabetSoupAttackRecipe):
