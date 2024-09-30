@@ -46,6 +46,7 @@ def log_metrics(results, metrics, args, experiment_number, logger):
 
 def run_single_experiment(args, metrics, experiment_number):
     logger = get_root_logger()
+    logger.info(f"Experiment {experiment_number} configuration: {args}")
     expr_results = []
     logger.info(f"Running experiment number {experiment_number}: "
                 f"attack {args.attack_name} on {args.model_name} "
