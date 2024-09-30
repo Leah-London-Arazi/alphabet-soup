@@ -7,7 +7,7 @@ import math
 import os
 import gensim.downloader as api
 import transformers
-import textattack
+from textattack.models.helpers import T5ForTextToText
 from textattack.shared.utils import device as ta_device
 from textattack.models.wrappers import HuggingFaceModelWrapper
 
@@ -48,7 +48,7 @@ def get_grad_wrt_func(model_wrapper, input_ids, label):
     t_label = torch.tensor(label, device=ta_device)
     model = model_wrapper.model
 
-    if isinstance(model, textattack.models.helpers.T5ForTextToText):
+    if isinstance(model, T5ForTextToText):
         raise NotImplementedError(
             "`get_grads` for T5FotTextToText has not been implemented yet."
         )

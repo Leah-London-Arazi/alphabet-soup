@@ -11,6 +11,10 @@ from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 
 
 def disable_warnings():
+    # filter FutureWarning
+    import warnings
+    warnings.simplefilter(action='ignore', category=FutureWarning)
+
     # textattack
     class NoWarningsFilter(logging.Filter):
         def filter(self, record):
@@ -28,6 +32,8 @@ def disable_warnings():
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     # transformers
+    from transformers import logging as transformers_logging
+    transformers_logging.set_verbosity_warning()
     logging.getLogger("transformers").setLevel(logging.ERROR)
 
 
