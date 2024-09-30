@@ -2,9 +2,8 @@ defaults:
   model_names:
     - cardiffnlp/twitter-roberta-base-sentiment-latest
     - finiteautomata/bertweet-base-sentiment-analysis
-  targeted: True
-  target_class: 0
-  confidence_threshold: 0.5
+  targeted: False
+  confidence_threshold: 0
   log_level: INFO
   query_budget: 1
   num_repetitions: 500
