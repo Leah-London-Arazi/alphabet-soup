@@ -26,6 +26,8 @@ class GCGRandomTokenSwap(Transformation):
         self.goal_function = goal_function
         # Fix for get_results issue
         self.goal_function.num_queries = 0
+        self.goal_function.ground_truth_output = goal_function.target_class
+
         self.target_class = self.goal_function.target_class
 
         self.max_retries_per_iter = max_retries_per_iter
@@ -70,7 +72,7 @@ class GCGRandomTokenSwap(Transformation):
                                    padding=True,
                                    truncation=True).input_ids.to(device=ta_device)
 
-        curr_score, search_over = self.goal_function.get_result(attacked_text)
+        curr_result, search_over = self.goal_function.get_result(attacked_text)
         if search_over:
             return input_ids
 
@@ -86,14 +88,14 @@ class GCGRandomTokenSwap(Transformation):
             new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
 
             # check if the replacement is better than the original
-            new_score, search_over = self.goal_function.get_result(AttackedText(self.tokenizer.decode(new_input_ids)))
+            new_result, search_over = self.goal_function.get_result(AttackedText(self.tokenizer.decode(new_input_ids)))
             if search_over:
                 return new_input_ids
-            if new_score > curr_score:
+            if new_result.score > curr_result.score:
                 return new_input_ids
-            if new_score > best_score and self.tokenizer.decode(new_input_ids) != attacked_text.tokenizer_input:
+            if new_result.score > best_score and self.tokenizer.decode(new_input_ids) != attacked_text.tokenizer_input:
                 best_input_ids = new_input_ids.clone().detach().to(device=ta_device)
-                best_score = new_score
+                best_score = new_result.score
 
         self.logger.warning("Reached max retries")
         return best_input_ids
