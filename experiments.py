@@ -10,6 +10,7 @@ from omegaconf import OmegaConf
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
 from metrics.time import Time
+from metrics.score import Score
 from utils.attack import run_attack
 
 
@@ -96,7 +97,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time], args.config_file)
+    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time, Score], args.config_file)
 
 
 if __name__ == '__main__':
