@@ -21,7 +21,8 @@ def get_attack_recipe(args):
     if "attack_params" not in args:
         args.attack_params = {}
     attack_params = attack_params_cls(**args.attack_params)
-
+    if not args.targeted:
+        args.target_class = 0
     attack_recipe = attack_recipe_cls(model_name=args.model_name,
                                       targeted=args.targeted,
                                       target_class=args.target_class,
@@ -80,6 +81,8 @@ def run_experiments(metrics, config_file):
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
         for model_name in experiment_args.model_names:
+            if not experiment_args.targeted:
+                experiment_args.target_classes = [0]
             for target_class in experiment_args.target_classes:
                 experiment_args.model_name = model_name
                 experiment_args.target_class = target_class
