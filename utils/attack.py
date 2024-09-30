@@ -249,7 +249,7 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
         token_ids = get_random_tokens(tokenizer, num_random_tokens)
 
     else:
-        token_ids = torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
+        return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
 
     if token_ids.shape[0] == 0:
         logger.error("Filtered out all tokens!")
