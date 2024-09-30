@@ -77,8 +77,10 @@ def run_experiments(metrics, config_file):
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
         for model_name in experiment_args.model_names:
-            experiment_args.model_name = model_name
-            run_single_experiment(experiment_args, metrics, experiment_num)
+            for target_class in experiment_args.target_classes:
+                experiment_args.model_name = model_name
+                experiment_args.target_class = target_class
+                run_single_experiment(experiment_args, metrics, experiment_num)
 
 
 def get_parser():
