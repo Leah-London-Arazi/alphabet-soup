@@ -252,7 +252,7 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
         return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
 
     if token_ids.shape[0] == 0:
-        logger.error("Filtered out all tokens!")
+        raise RuntimeError("Filtered out all tokens!")
 
     else:
         logger.debug(f"{len(token_ids)} tokens remaining after filtering")

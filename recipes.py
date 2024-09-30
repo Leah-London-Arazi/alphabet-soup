@@ -1,18 +1,13 @@
 from pydantic import BaseModel
-
 from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, GCGAttackParams
-from utils.utils import disable_warnings
-disable_warnings()
-
-import textattack
+from textattack import Attack
 from textattack.transformations import CompositeTransformation, WordSwapRandomCharacterSubstitution, \
     WordSwapRandomCharacterDeletion, WordSwapRandomCharacterInsertion, WordSwapNeighboringCharacterSwap
-
 from search_methods.pez_gradient_search import PEZGradientSearch
-from transformations.gcg_random_token_swap import GCGRandomTokenSwap
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted, IncreaseConfidenceUntargeted
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
 from search_methods.beam_search import BeamSearch
+from transformations.gcg_random_token_swap import GCGRandomTokenSwap
 from transformations.nop import NOP
 from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap
 from transformations.word_swap_random_word import WordSwapRandomWord
@@ -53,10 +48,10 @@ class AlphabetSoupAttackRecipe:
         return BeamSearch(beam_width=1)
 
     def get_attack(self):
-        return textattack.Attack(self.get_goal_function(),
-                                 self.get_constraints(),
-                                 self.get_transformation(),
-                                 self.get_search_method())
+        return Attack(self.get_goal_function(),
+                      self.get_constraints(),
+                      self.get_transformation(),
+                      self.get_search_method())
 
     @property
     def is_targeted_only(self):
