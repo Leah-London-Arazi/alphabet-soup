@@ -1,10 +1,10 @@
-import argparse
-
 from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, get_root_logger
 
 disable_warnings()
 
+import argparse
 from tqdm import trange
+import traceback
 from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from omegaconf import OmegaConf
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
@@ -35,9 +35,10 @@ def log_metrics(results, metrics, args, experiment_number, logger):
             metric_result = metric().calculate(results)
             if metric_result:
                 metrics_results.append(metric_result)
-        except Exception as e:
+        except Exception:
             logger.error(f"Caught exception while calculating "
-                         f"metrics in {args.attack_name} on {args.model_name}: {e}")
+                         f"metrics in {args.attack_name} on {args.model_name}."
+                         f" {traceback.format_exc()}")
             continue
 
     logger.info(f"Metric results for experiment number {experiment_number}: "
@@ -62,9 +63,10 @@ def run_single_experiment(args, metrics, experiment_number):
             init_text = args.initial_text
         try:
             expr_rep_result = run_attack(attack=attack, input_text=init_text)
-        except Exception as e:
+        except Exception:
             logger.error(f"Caught exception while running "
-                         f"attack {args.attack_name} on {args.model_name}: {e}")
+                         f"attack {args.attack_name} on {args.model_name}. "
+                         f"{traceback.format_exc()}")
             continue
         expr_results.append(expr_rep_result)
 
