@@ -17,6 +17,8 @@ def get_attack_recipe(args):
     attack_name = AttackName(args.attack_name)
     attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
     attack_params_cls = ATTACK_NAME_TO_PARAMS[attack_name]
+    if "attack_params" not in args:
+        args.attack_params = {}
     attack_params = attack_params_cls(**args.attack_params)
 
     attack_recipe = attack_recipe_cls(model_name=args.model_name,
