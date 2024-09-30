@@ -14,7 +14,7 @@ from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 def disable_warnings():
     # tensorflow
     import os
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     # transformers
     from transformers import logging
     logging.set_verbosity_error()
