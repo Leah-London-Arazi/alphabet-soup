@@ -30,4 +30,6 @@ num_queries: {result.num_queries}"""
     def process(self, msg, kwargs):
         if 'extra' not in kwargs:
             kwargs['extra'] = self.extra
+        if not kwargs['extra']:
+            return msg, kwargs
         return f"{msg}\nextra={kwargs['extra']}", kwargs

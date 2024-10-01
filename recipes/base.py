@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from textattack import Attack
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted, IncreaseConfidenceUntargeted
 from search_methods.beam_search import BeamSearch
+from transformations.nop import NOP
 from utils.attack import get_model_wrapper
 
 

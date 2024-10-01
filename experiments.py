@@ -1,6 +1,8 @@
 import argparse
+import os.path
+import traceback
 
-from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger
+from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time
 
 disable_warnings()
 set_random_seed()
@@ -15,11 +17,23 @@ from utils.attack import run_attack
 from utils.recipes import get_attack_recipe_from_args
 from utils.utils import get_logger
 
+METRICS_RESULTS_DIR_NAME = "metrics_results"
+
 
 logger = get_logger(__name__)
 
 
-def log_metrics(results, metrics, experiment_info=None):
+def create_metrics_dir():
+    current_time = get_current_time()
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    dir_name = os.path.join(current_dir, METRICS_RESULTS_DIR_NAME, current_time)
+    create_dir(dir_name)
+    return dir_name
+
+
+def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_args):
+    experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
+
     metrics_results = []
     for metric in metrics:
         try:
@@ -30,11 +44,19 @@ def log_metrics(results, metrics, experiment_info=None):
             logger.error(f"Caught exception while calculating metrics: {e}", extra=experiment_info)
             continue
 
-    logger.info(f"Metric results where written to file: {metrics_results}", extra=experiment_info)
+    # save results to file
+    results_file_name = (f"experiment_num={experiment_num}"
+                         f"_model_name={experiment_args.model_name.replace("/", "_")}"
+                         f"_target_class={experiment_args.target_class}")
+    with open(os.path.join(metrics_dir, results_file_name), "w") as f:
+        f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
+
+    logger.info(f"Metric results were written to file", extra=experiment_info)
 
 
-def run_single_experiment(experiment_num, experiment_args, metrics):
+def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir):
     experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
+    logger.update_extra(extra=experiment_info)
     logger.info(f"Running experiment", extra=experiment_info)
 
     attack_recipe = get_attack_recipe_from_args(experiment_args, from_command_line=False)
@@ -51,15 +73,22 @@ def run_single_experiment(experiment_num, experiment_args, metrics):
         try:
             expr_rep_result = run_attack(attack=attack, input_text=init_text)
         except Exception as e:
-            logger.error(f"Caught exception while running experiment: {e}")
+            logger.error(f"Caught exception while running experiment")
+            traceback.print_exc()
             continue
 
         expr_results.append(expr_rep_result)
 
-    log_metrics(results=expr_results, metrics=metrics, experiment_info=experiment_info)
+    calculate_metrics(results=expr_results,
+                      metrics=metrics,
+                      metrics_dir=metrics_dir,
+                      experiment_num=experiment_num,
+                      experiment_args=experiment_args)
 
 
 def run_experiments(metrics, config_file):
+    metrics_dir = create_metrics_dir()
+
     config = OmegaConf.load(config_file)
 
     for experiment_num, experiment_config in enumerate(config.experiments):
@@ -72,7 +101,8 @@ def run_experiments(metrics, config_file):
                 experiment_args.target_class = target_class
                 run_single_experiment(experiment_num=experiment_num,
                                       experiment_args=experiment_args,
-                                      metrics=metrics)
+                                      metrics=metrics,
+                                      metrics_dir=metrics_dir)
 
 
 def get_parser():
