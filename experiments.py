@@ -18,22 +18,6 @@ from utils.utils import get_logger
 
 logger = get_logger(__name__)
 
-# def get_attack_recipe(args):
-#     attack_name = AttackName(args.attack_name)
-#     attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
-#     attack_params_cls = ATTACK_NAME_TO_PARAMS[attack_name]
-#     if "attack_params" not in args:
-#         args.attack_params = {}
-#     attack_params = attack_params_cls(**args.attack_params)
-#     if not args.targeted:
-#         args.target_class = 0
-#     attack_recipe = attack_recipe_cls(model_name=args.model_name,
-#                                       targeted=args.targeted,
-#                                       target_class=args.target_class,
-#                                       confidence_threshold=args.confidence_threshold,
-#                                       query_budget=args.query_budget,
-#                                       attack_params=attack_params)
-#     return attack_recipe
 
 def log_metrics(results, metrics, extra=None):
     metrics_results = []
@@ -59,7 +43,6 @@ def run_single_experiment(experiment_num, experiment_args, metrics):
 
     for i in trange(experiment_args.num_repetitions):
         attack = attack_recipe.get_attack()
-        print(i)
 
         if experiment_args.rand_init_text:
             init_text = random_sentence()
