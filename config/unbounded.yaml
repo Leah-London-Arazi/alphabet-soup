@@ -7,9 +7,9 @@ defaults:
   targeted: True
   target_classes: [0]
   confidence_threshold: 0.9
-  query_budget: 1000
+  query_budget: 500
   initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
-  num_repetitions: 500
+  num_repetitions: 250
 
 experiments:
   - attack_name: character_roulette_black_box_random_char
