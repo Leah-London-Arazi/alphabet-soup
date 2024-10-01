@@ -6,7 +6,7 @@ defaults:
   confidence_threshold: 0
   log_level: INFO
   query_budget: 1
-  num_repetitions: 500
+  num_repetitions: 250
 
 experiments:
   - attack_name: baseline
