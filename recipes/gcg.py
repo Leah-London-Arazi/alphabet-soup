@@ -1,7 +1,5 @@
 from recipes.base import BaseAttackRecipe
 from schemas import GCGAttackParams
-from utils.utils import disable_warnings
-disable_warnings()
 from transformations.gcg_random_token_swap import GCGRandomTokenSwap
 from search_methods.beam_search import BeamSearch
 

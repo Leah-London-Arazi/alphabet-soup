@@ -1,8 +1,10 @@
 from consts import AttackName
+from recipes.baseline import Baseline
 from schemas import (CharacterRouletteBlackBoxAttackParams,
                      CharacterRouletteWhiteBoxAttackParams,
                      PEZAttackParams,
-                     GCGAttackParams)
+                     GCGAttackParams,
+                     AttackParams)
 from recipes.character_roulette import CharacterRouletteBlackBoxRandomChar, CharacterRouletteBlackBoxRandomWord, CharacterRouletteWhiteBox
 from recipes.pez import PEZ
 from recipes.gcg import GCG
@@ -14,6 +16,7 @@ ATTACK_NAME_TO_RECIPE = {
     AttackName.character_roulette_white_box: CharacterRouletteWhiteBox,
     AttackName.pez: PEZ,
     AttackName.gcg: GCG,
+    AttackName.baseline: Baseline
 }
 
 
@@ -23,6 +26,7 @@ ATTACK_NAME_TO_PARAMS = {
     AttackName.character_roulette_white_box: CharacterRouletteWhiteBoxAttackParams,
     AttackName.pez: PEZAttackParams,
     AttackName.gcg: GCGAttackParams,
+    AttackName.baseline: AttackParams
 }
 
 
@@ -40,3 +44,6 @@ def get_attack_recipe_from_args(args, from_command_line=False):
                                       query_budget=args.query_budget,
                                       attack_params=attack_params)
     return attack_recipe
+
+
+

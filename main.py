@@ -1,3 +1,7 @@
+from utils.utils import disable_warnings
+
+disable_warnings()
+
 import argparse
 from consts import AttackName
 from utils.attack import run_attack

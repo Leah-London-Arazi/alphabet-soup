@@ -1,9 +1,5 @@
 from pydantic import BaseModel
-
-from utils.utils import disable_warnings
-disable_warnings()
-
-import textattack
+from textattack import Attack
 from goal_functions.increase_confidence import IncreaseConfidenceTargeted, IncreaseConfidenceUntargeted
 from search_methods.beam_search import BeamSearch
 from utils.attack import get_model_wrapper
@@ -43,7 +39,7 @@ class BaseAttackRecipe:
         return BeamSearch(beam_width=1)
 
     def get_attack(self):
-        return textattack.Attack(self.get_goal_function(),
+        return Attack(self.get_goal_function(),
                                  self.get_constraints(),
                                  self.get_transformation(),
                                  self.get_search_method())

@@ -1,7 +1,10 @@
 from recipes.base import BaseAttackRecipe
 from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams
-from textattack.transformations import CompositeTransformation, WordSwapRandomCharacterSubstitution, \
-    WordSwapRandomCharacterDeletion, WordSwapRandomCharacterInsertion, WordSwapNeighboringCharacterSwap
+from textattack.transformations import (CompositeTransformation,
+                                        WordSwapRandomCharacterSubstitution,
+                                        WordSwapRandomCharacterDeletion,
+                                        WordSwapRandomCharacterInsertion,
+                                        WordSwapNeighboringCharacterSwap)
 from search_methods.greedy_word_swap_threshold_wir import GreedyWordSwapThresholdWIR
 from search_methods.beam_search import BeamSearch
 from transformations.random_token_gradient_based_swap import RandomTokenGradientBasedSwap

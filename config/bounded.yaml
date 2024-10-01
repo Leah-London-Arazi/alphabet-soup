@@ -6,7 +6,6 @@ defaults:
   target_classes: [0]
   confidence_threshold: 0.9
   query_budget: 1000
-  attack_params: {}
   initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
   num_repetitions: 500
 

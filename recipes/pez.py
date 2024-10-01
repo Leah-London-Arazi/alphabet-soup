@@ -1,7 +1,5 @@
 from recipes.base import BaseAttackRecipe
 from schemas import PEZAttackParams
-from utils.utils import disable_warnings
-disable_warnings()
 from search_methods.pez_gradient_search import PEZGradientSearch
 
 
