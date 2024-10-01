@@ -19,7 +19,7 @@ from utils.utils import get_logger
 logger = get_logger(__name__)
 
 
-def log_metrics(results, metrics, extra=None):
+def log_metrics(results, metrics, experiment_info=None):
     metrics_results = []
     for metric in metrics:
         try:
@@ -27,21 +27,21 @@ def log_metrics(results, metrics, extra=None):
             if metric_result:
                 metrics_results.append(metric_result)
         except Exception as e:
-            logger.error(f"Caught exception while calculating metrics: {e}", extra=extra)
+            logger.error(f"Caught exception while calculating metrics: {e}", extra=experiment_info)
             continue
 
-    logger.info(f"Metric results where written to file: {metrics_results}", extra=extra)
+    logger.info(f"Metric results where written to file: {metrics_results}", extra=experiment_info)
 
 
 def run_single_experiment(experiment_num, experiment_args, metrics):
-    extra = dict(experiment_num=experiment_num, experiment_args=experiment_args)
-    logger.info(f"Running experiment", extra=extra)
+    experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
+    logger.info(f"Running experiment", extra=experiment_info)
 
     attack_recipe = get_attack_recipe_from_args(experiment_args, from_command_line=False)
 
     expr_results = []
 
-    for i in trange(experiment_args.num_repetitions):
+    for _ in trange(experiment_args.num_repetitions):
         attack = attack_recipe.get_attack()
 
         if experiment_args.rand_init_text:
@@ -56,7 +56,7 @@ def run_single_experiment(experiment_num, experiment_args, metrics):
 
         expr_results.append(expr_rep_result)
 
-    log_metrics(results=expr_results, metrics=metrics, extra=extra)
+    log_metrics(results=expr_results, metrics=metrics, experiment_info=experiment_info)
 
 
 def run_experiments(metrics, config_file):
