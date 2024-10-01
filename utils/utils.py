@@ -10,14 +10,31 @@ from utils.module_logger import ModuleLogger
 from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 
 
-# https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
 def disable_warnings():
+    # filter FutureWarning
+    import warnings
+    warnings.simplefilter(action='ignore', category=FutureWarning)
+
+    # textattack
+    class NoWarningsFilter(logging.Filter):
+        def filter(self, record):
+            # Filter out warnings (i.e., records with WARNING level)
+            if record.levelno == logging.WARNING:
+                return False
+            return True
+
+    textattack_install_logger = logging.getLogger("textattack.shared.utils.install")
+    textattack_install_logger.addFilter(NoWarningsFilter())
+
     # tensorflow
+    # https://stackoverflow.com/questions/40426502/is-there-a-way-to-suppress-the-messages-tensorflow-prints/40426709
     import os
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
     # transformers
-    from transformers import logging
-    logging.set_verbosity_error()
+    from transformers import logging as transformers_logging
+    transformers_logging.set_verbosity_warning()
+    logging.getLogger("transformers").setLevel(logging.ERROR)
 
 
 def random_word(min_len=3, max_len=10):

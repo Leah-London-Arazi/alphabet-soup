@@ -12,7 +12,7 @@ class AttackName(enum.Enum):
     character_roulette_black_box_random_char = "character_roulette_black_box_random_char"
     character_roulette_black_box_random_word = "character_roulette_black_box_random_word"
     character_roulette_white_box = "character_roulette_white_box"
-    pez= "pez"
+    pez = "pez"
     gcg = "gcg"
 
 
