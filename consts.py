@@ -8,6 +8,7 @@ class FilterTokenIDsMethod(enum.Enum):
 
 
 class AttackName(enum.Enum):
+    baseline = "baseline"
     character_roulette_black_box_random_char = "character_roulette_black_box_random_char"
     character_roulette_black_box_random_word = "character_roulette_black_box_random_word"
     character_roulette_white_box = "character_roulette_white_box"
@@ -16,10 +17,9 @@ class AttackName(enum.Enum):
 
 
 from schemas import CharacterRouletteBlackBoxAttackParams, CharacterRouletteWhiteBoxAttackParams, PEZAttackParams, \
-    GCGAttackParams
+    GCGAttackParams, AttackParams
 from recipes import CharacterRouletteBlackBoxRandomChar, CharacterRouletteBlackBoxRandomWord, \
-    CharacterRouletteWhiteBox, PEZ, GCG
-
+    CharacterRouletteWhiteBox, PEZ, GCG, Baseline
 
 ATTACK_NAME_TO_RECIPE = {
     AttackName.character_roulette_black_box_random_char: CharacterRouletteBlackBoxRandomChar,
@@ -27,6 +27,7 @@ ATTACK_NAME_TO_RECIPE = {
     AttackName.character_roulette_white_box: CharacterRouletteWhiteBox,
     AttackName.pez: PEZ,
     AttackName.gcg: GCG,
+    AttackName.baseline: Baseline
 }
 
 
@@ -36,4 +37,5 @@ ATTACK_NAME_TO_PARAMS = {
     AttackName.character_roulette_white_box: CharacterRouletteWhiteBoxAttackParams,
     AttackName.pez: PEZAttackParams,
     AttackName.gcg: GCGAttackParams,
+    AttackName.baseline: AttackParams
 }
