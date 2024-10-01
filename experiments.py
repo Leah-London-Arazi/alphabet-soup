@@ -10,6 +10,7 @@ from omegaconf import OmegaConf
 from consts import ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS, AttackName
 from metrics.entropy import Entropy
 from metrics.time import Time
+from metrics.score import Score
 from utils.attack import run_attack
 
 
@@ -17,8 +18,11 @@ def get_attack_recipe(args):
     attack_name = AttackName(args.attack_name)
     attack_recipe_cls = ATTACK_NAME_TO_RECIPE[attack_name]
     attack_params_cls = ATTACK_NAME_TO_PARAMS[attack_name]
+    if "attack_params" not in args:
+        args.attack_params = {}
     attack_params = attack_params_cls(**args.attack_params)
-
+    if not args.targeted:
+        args.target_class = 0
     attack_recipe = attack_recipe_cls(model_name=args.model_name,
                                       targeted=args.targeted,
                                       target_class=args.target_class,
@@ -77,6 +81,8 @@ def run_experiments(metrics, config_file):
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
         for model_name in experiment_args.model_names:
+            if not experiment_args.targeted:
+                experiment_args.target_classes = [0]
             for target_class in experiment_args.target_classes:
                 experiment_args.model_name = model_name
                 experiment_args.target_class = target_class
@@ -94,7 +100,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time], args.config_file)
+    run_experiments([Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time, Score], args.config_file)
 
 
 if __name__ == '__main__':
