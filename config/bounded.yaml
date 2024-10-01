@@ -5,7 +5,6 @@ defaults:
   targeted: True
   target_classes: [0]
   confidence_threshold: 0.9
-  log_level: DEBUG
   query_budget: 1000
   attack_params: {}
   initial_text: "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
