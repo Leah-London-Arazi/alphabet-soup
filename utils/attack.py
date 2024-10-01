@@ -260,6 +260,7 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
 
     return token_ids
 
+
 def get_random_tokens(tokenizer, num_tokens):
     vocab_size = len(tokenizer)
     return torch.randint(vocab_size, size=(num_tokens,))
