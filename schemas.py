@@ -8,7 +8,7 @@ class AttackParams(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
     @classmethod
-    def _from_args(cls, attack_params):
+    def _from_command_line_args(cls, attack_params):
         kwargs = {}
         for param in attack_params:
             key, value = param.split("=")
