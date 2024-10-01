@@ -2,9 +2,16 @@ import logging
 
 
 class ModuleLogger(logging.LoggerAdapter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, extra: dict | None = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.results_matrix = {}
+        self.extra = extra or {}
+
+    def update_extra(self, extra):
+        self.extra = extra
+
+    def clear_extra(self):
+        self.extra = {}
 
     def log_result(self, result, i=None):
         if i is not None:
@@ -19,3 +26,8 @@ model_output: {result.output}
 score: {result.score}
 num_queries: {result.num_queries}"""
         )
+
+    def process(self, msg, kwargs):
+        if 'extra' not in kwargs:
+            kwargs['extra'] = self.extra
+        return f"{msg}\nextra={kwargs['extra']}", kwargs
