@@ -6,6 +6,7 @@ import numpy as np
 import logging
 from logging import _nameToLevel
 import sys
+from datetime import datetime
 from utils.module_logger import ModuleLogger
 from utils.defaults import ROOT_LOGGER_NAME, DEFAULT_RANDOM_SENTENCE_LENGTH
 
@@ -61,6 +62,10 @@ def create_dir(dir_name):
     directory = Path(dir_name)
     directory.mkdir(parents=True, exist_ok=True)
     return dir_name
+
+
+def get_current_time():
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 def get_logger(name):

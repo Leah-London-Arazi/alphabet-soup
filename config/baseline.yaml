@@ -4,7 +4,6 @@ defaults:
     - finiteautomata/bertweet-base-sentiment-analysis
   targeted: False
   confidence_threshold: 0
-  log_level: INFO
   query_budget: 1
   num_repetitions: 250
 

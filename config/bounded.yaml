@@ -5,7 +5,6 @@ defaults:
   targeted: True
   target_classes: [0, 2]
   confidence_threshold: 0.9
-  log_level: DEBUG
   query_budget: 500
   initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
   num_repetitions: 250
