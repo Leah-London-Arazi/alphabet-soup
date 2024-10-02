@@ -40,7 +40,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
             metric_result = metric().calculate(results)
             if metric_result:
                 metrics_results.append(metric_result)
-        except Exception as e:
+        except:
             logger.error(f"Caught exception while calculating metrics: {traceback.format_exc()}", extra=experiment_info)
             continue
 
@@ -72,7 +72,7 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
             init_text = experiment_args.initial_text
         try:
             expr_rep_result = run_attack(attack=attack, input_text=init_text)
-        except Exception as e:
+        except:
             logger.error(f"Caught exception while running experiment: {traceback.format_exc()}")
             continue
 

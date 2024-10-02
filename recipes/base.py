@@ -41,9 +41,9 @@ class BaseAttackRecipe:
 
     def get_attack(self):
         return Attack(self.get_goal_function(),
-                                 self.get_constraints(),
-                                 self.get_transformation(),
-                                 self.get_search_method())
+                      self.get_constraints(),
+                      self.get_transformation(),
+                      self.get_search_method())
 
     @property
     def is_targeted_only(self):

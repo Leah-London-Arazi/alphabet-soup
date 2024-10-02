@@ -11,7 +11,7 @@ class GCGRandomTokenSwap(Transformation):
     def __init__(self,
                  model_wrapper,
                  goal_function,
-                 max_retries_per_iter,
+                 n_samples_per_iter,
                  top_k,
                  word_refs,
                  score_threshold,
@@ -24,13 +24,10 @@ class GCGRandomTokenSwap(Transformation):
         self.model.to(device=ta_device)
         self.tokenizer = model_wrapper.tokenizer
         self.goal_function = goal_function
-        # Fix for get_results issue
-        self.goal_function.num_queries = 0
-        self.goal_function.ground_truth_output = goal_function.target_class
 
         self.target_class = self.goal_function.target_class
 
-        self.max_retries_per_iter = max_retries_per_iter
+        self.n_samples_per_iter = n_samples_per_iter
         self.top_k = top_k
 
         self.cache_dir = cache_dir
@@ -49,6 +46,7 @@ class GCGRandomTokenSwap(Transformation):
                                                 word_refs=word_refs,
                                                 score_threshold=score_threshold,
                                                 num_random_tokens=num_random_tokens)
+
     @property
     def is_black_box(self):
         return False
@@ -72,37 +70,23 @@ class GCGRandomTokenSwap(Transformation):
                                    padding=True,
                                    truncation=True).input_ids.to(device=ta_device)
 
-        curr_result, search_over = self.goal_function.get_result(attacked_text)
-        if search_over:
-            return input_ids
 
         grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.target_class)['gradient'].to(device=ta_device)
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
-        loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
+        self.prev_loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
 
-        best_input_ids = input_ids.clone().detach().to(device=ta_device)
-        best_score = 0
+        new_input_ids_list = []
+            
+        for _ in range(self.n_samples_per_iter):
+            new_input_ids = self._sample_control(input_ids.squeeze(0), self.prev_loss_change_estimate)
+            new_input_ids_list.append(new_input_ids)
 
-        for _ in range(self.max_retries_per_iter):
-            new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
-
-            # check if the replacement is better than the original
-            new_result, search_over = self.goal_function.get_result(AttackedText(self.tokenizer.decode(new_input_ids)))
-            if search_over:
-                return new_input_ids
-            if new_result.score > curr_result.score:
-                return new_input_ids
-            if new_result.score > best_score and self.tokenizer.decode(new_input_ids) != attacked_text.tokenizer_input:
-                best_input_ids = new_input_ids.clone().detach().to(device=ta_device)
-                best_score = new_result.score
-
-        self.logger.warning("Reached max retries")
-        return best_input_ids
+        return new_input_ids_list
 
 
     def _get_transformations(self, current_text, indices_to_replace):
-        new_tokens = self._get_new_tokens_gcg(current_text)
-        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens))]
+        new_tokens_list = self._get_new_tokens_gcg(current_text)
+        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens)) for new_tokens in new_tokens_list]
         
         return transformations

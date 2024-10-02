@@ -37,7 +37,7 @@ class PEZAttackParams(AttackParams):
 
 
 class GCGAttackParams(AttackParams):
-    max_retries_per_iter: int = 100
+    n_samples_per_iter: int = 20
     top_k: int = 256
     filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
