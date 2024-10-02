@@ -41,7 +41,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
             if metric_result:
                 metrics_results.append(metric_result)
         except Exception as e:
-            logger.error(f"Caught exception while calculating metrics: {e}", extra=experiment_info)
+            logger.error(f"Caught exception while calculating metrics: {traceback.format_exc()}", extra=experiment_info)
             continue
 
     # save results to file
@@ -51,7 +51,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
     with open(os.path.join(metrics_dir, results_file_name), "w") as f:
         f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
 
-    logger.info(f"Metric results were written to file", extra=experiment_info)
+    logger.info(f"Metric results were written to file: {results_file_name}", extra=experiment_info)
 
 
 def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir):
@@ -73,8 +73,7 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
         try:
             expr_rep_result = run_attack(attack=attack, input_text=init_text)
         except Exception as e:
-            logger.error(f"Caught exception while running experiment")
-            traceback.print_exc()
+            logger.error(f"Caught exception while running experiment: {traceback.format_exc()}")
             continue
 
         expr_results.append(expr_rep_result)
