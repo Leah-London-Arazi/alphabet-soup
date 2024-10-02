@@ -24,9 +24,9 @@ logger = get_logger(__name__)
 def create_metrics_dir():
     current_time = get_current_time()
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    dir_name = os.path.join(current_dir, METRICS_RESULTS_DIR_NAME, current_time)
-    create_dir(dir_name)
-    return dir_name
+    dir_path = os.path.join(current_dir, METRICS_RESULTS_DIR_NAME, current_time)
+    create_dir(dir_path)
+    return dir_path
 
 
 def write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results):
@@ -96,6 +96,10 @@ def run_experiments(config_file):
 
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
+        # create metrics directory for each attack
+        attack_metrics_dir = os.path.join(metrics_dir, experiment_args.attack_name)
+        create_dir(attack_metrics_dir)
+
         for model in experiment_args.models:
             if not experiment_args.targeted:
                 experiment_args.target_classes = [0]
@@ -105,7 +109,7 @@ def run_experiments(config_file):
                 run_single_experiment(experiment_num=experiment_num,
                                       experiment_args=experiment_args,
                                       metrics=metrics,
-                                      metrics_dir=metrics_dir)
+                                      metrics_dir=attack_metrics_dir)
 
 
 def get_parser():
