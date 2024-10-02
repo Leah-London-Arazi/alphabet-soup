@@ -2,6 +2,7 @@ import argparse
 import os.path
 import traceback
 
+from consts import MetricName
 from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time, \
     get_escaped_model_name
 
@@ -9,13 +10,9 @@ disable_warnings()
 set_random_seed()
 
 from tqdm import trange
-from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
 from omegaconf import OmegaConf
-from metrics.entropy import Entropy
-from metrics.time import Time
-from metrics.score import Score
 from utils.attack import run_attack
-from utils.recipes import get_attack_recipe_from_args
+from utils.recipes import get_attack_recipe_from_args, METRIC_NAME_TO_CLASS
 from utils.utils import get_logger
 
 METRICS_RESULTS_DIR_NAME = "metrics_results"
@@ -32,6 +29,17 @@ def create_metrics_dir():
     return dir_name
 
 
+def write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results):
+    results_file_name = (f"experiment_num={experiment_num}"
+                         f"_model_name={get_escaped_model_name(experiment_args.model_name)}"
+                         f"_target_class={experiment_args.target_class}")
+    results_file_path = os.path.join(metrics_dir, results_file_name)
+    with open(os.path.join(results_file_path), "w") as f:
+        f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
+
+    logger.info(f"Metric results were written to file: {results_file_path}", extra=experiment_info)
+
+
 def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_args):
     experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
 
@@ -46,14 +54,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
                          f"{traceback.format_exc()}", extra=experiment_info)
             continue
 
-    # save results to file
-    results_file_name = (f"experiment_num={experiment_num}"
-                         f"_model_name={get_escaped_model_name(experiment_args.model_name)}"
-                         f"_target_class={experiment_args.target_class}")
-    with open(os.path.join(metrics_dir, results_file_name), "w") as f:
-        f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
-
-    logger.info(f"Metric results were written to file: {results_file_name}", extra=experiment_info)
+    write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results)
 
 
 def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir):
@@ -87,10 +88,11 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
                       experiment_args=experiment_args)
 
 
-def run_experiments(metrics, config_file):
-    metrics_dir = create_metrics_dir()
-
+def run_experiments(config_file):
     config = OmegaConf.load(config_file)
+
+    metrics = [METRIC_NAME_TO_CLASS[MetricName(metric)] for metric in config.metrics]
+    metrics_dir = create_metrics_dir()
 
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
@@ -121,8 +123,7 @@ def main():
 
     init_logger(level_name=args.log_level)
 
-    run_experiments(metrics=[Entropy, Perplexity, AttackQueries, AttackSuccessRate, Time, Score],
-                    config_file=args.config_file)
+    run_experiments(config_file=args.config_file)
 
 
 if __name__ == '__main__':

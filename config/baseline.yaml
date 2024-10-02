@@ -1,3 +1,6 @@
+metrics:
+  - score
+
 defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest

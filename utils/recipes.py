@@ -1,4 +1,9 @@
-from consts import AttackName
+from textattack.metrics import Perplexity, AttackQueries, AttackSuccessRate
+
+from consts import AttackName, MetricName
+from metrics.entropy import Entropy
+from metrics.score import Score
+from metrics.time import Time
 from recipes.baseline import Baseline
 from schemas import (CharacterRouletteBlackBoxAttackParams,
                      CharacterRouletteWhiteBoxAttackParams,
@@ -27,6 +32,16 @@ ATTACK_NAME_TO_PARAMS = {
     AttackName.pez: PEZAttackParams,
     AttackName.gcg: GCGAttackParams,
     AttackName.baseline: AttackParams
+}
+
+
+METRIC_NAME_TO_CLASS = {
+    MetricName.entropy: Entropy,
+    MetricName.perplexity: Perplexity,
+    MetricName.queries: AttackQueries,
+    MetricName.success_rate: AttackSuccessRate,
+    MetricName.time: Time,
+    MetricName.score: Score
 }
 
 
