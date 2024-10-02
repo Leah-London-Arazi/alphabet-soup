@@ -1,6 +1,11 @@
+from utils.utils import disable_warnings
+
+disable_warnings()
+
 import argparse
-from consts import AttackName, ATTACK_NAME_TO_RECIPE, ATTACK_NAME_TO_PARAMS
+from consts import AttackName
 from utils.attack import run_attack
+from utils.recipes import get_attack_recipe_from_args
 from utils.utils import random_sentence, init_logger
 
 
@@ -32,25 +37,11 @@ def get_parser():
 
 def main():
     parser = get_parser()
-
-    # Parse the arguments
     args = parser.parse_args()
 
-    # Logger
     init_logger(level_name=args.log_level)
 
-    attack_recipe_cls = ATTACK_NAME_TO_RECIPE[args.attack_name]
-    attack_params_cls = ATTACK_NAME_TO_PARAMS[args.attack_name]
-
-    attack_params = attack_params_cls._from_args(args.attack_params)
-
-    attack_recipe = attack_recipe_cls(model_name=args.model_name,
-                                      targeted=args.targeted,
-                                      target_class=args.target_class,
-                                      confidence_threshold=args.confidence_threshold,
-                                      query_budget=args.query_budget,
-                                      attack_params=attack_params,)
-
+    attack_recipe = get_attack_recipe_from_args(args, from_command_line=True)
     attack = attack_recipe.get_attack()
     run_attack(attack=attack, input_text=args.input_text)
 

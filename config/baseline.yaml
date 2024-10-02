@@ -1,0 +1,12 @@
+defaults:
+  model_names:
+    - cardiffnlp/twitter-roberta-base-sentiment-latest
+    - finiteautomata/bertweet-base-sentiment-analysis
+  targeted: False
+  confidence_threshold: 0
+  query_budget: 1
+  num_repetitions: 250
+
+experiments:
+  - attack_name: baseline
+    rand_init_text: True

@@ -7,7 +7,7 @@ import math
 import os
 import gensim.downloader as api
 import transformers
-import textattack
+from textattack.models.helpers import T5ForTextToText
 from textattack.shared.utils import device as ta_device
 from textattack.models.wrappers import HuggingFaceModelWrapper
 
@@ -24,18 +24,18 @@ def get_model_wrapper(model_name):
     return HuggingFaceModelWrapper(model, tokenizer)
 
 
-def print_attack_result(attack_result):
+def log_attack_result(attack_result):
     perturbed_result = attack_result.perturbed_result
-    print(f"perturbed text: '{perturbed_result.attacked_text.text}'.")
-    print(f"classified as {perturbed_result.output} with score of {perturbed_result.score}.")
-    print(f"used {perturbed_result.num_queries} queries.")
+    logger.info(f"perturbed text: '{perturbed_result.attacked_text.text}'. \n"
+                f"classified as {perturbed_result.output} with score of {perturbed_result.score}.\n"
+                f"used {perturbed_result.num_queries} queries.")
 
 
 def run_attack(attack, input_text, label=1):
     start = timer()
     attack_result = attack.attack(input_text, label)
     attack_result.attack_time = timer() - start
-    print_attack_result(attack_result)
+    log_attack_result(attack_result)
     return attack_result
 
 
@@ -48,7 +48,7 @@ def get_grad_wrt_func(model_wrapper, input_ids, label):
     t_label = torch.tensor(label, device=ta_device)
     model = model_wrapper.model
 
-    if isinstance(model, textattack.models.helpers.T5ForTextToText):
+    if isinstance(model, T5ForTextToText):
         raise NotImplementedError(
             "`get_grads` for T5FotTextToText has not been implemented yet."
         )
@@ -252,13 +252,14 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
         return torch.arange(model.get_input_embeddings().num_embeddings, device=ta_device)
 
     if token_ids.shape[0] == 0:
-        logger.error("Filtered out all tokens!")
+        raise RuntimeError("Filtered out all tokens!")
 
     else:
         logger.debug(f"{len(token_ids)} tokens remaining after filtering")
         logger.debug(f"The following tokens remained: {tokenizer.batch_decode([token_ids])}")
 
     return token_ids
+
 
 def get_random_tokens(tokenizer, num_tokens):
     vocab_size = len(tokenizer)
