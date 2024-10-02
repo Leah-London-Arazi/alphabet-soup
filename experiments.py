@@ -94,11 +94,11 @@ def run_experiments(metrics, config_file):
 
     for experiment_num, experiment_config in enumerate(config.experiments):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
-        for model_name in experiment_args.model_names:
+        for model in experiment_args.models:
             if not experiment_args.targeted:
                 experiment_args.target_classes = [0]
-            for target_class in experiment_args.target_classes:
-                experiment_args.model_name = model_name
+            for target_class in OmegaConf.merge(model, experiment_args).target_classes:
+                experiment_args.model_name = model.name
                 experiment_args.target_class = target_class
                 run_single_experiment(experiment_num=experiment_num,
                                       experiment_args=experiment_args,
