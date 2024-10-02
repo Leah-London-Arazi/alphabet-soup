@@ -189,12 +189,11 @@ def get_filtered_token_ids_by_bert_score(tokenizer, word_refs, score_threshold,
 
 
 def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold):
-    vocab = tokenizer.vocab
     cands = []
 
     glove = api.load('glove-wiki-gigaword-50')
 
-    for word,_ in vocab.items():
+    for word in tokenizer.get_vocab().keys():
         try:
             score = max([glove.similarity(word, ref) for ref in word_refs])
         except KeyError:
