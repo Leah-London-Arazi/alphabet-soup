@@ -42,7 +42,8 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
             if metric_result:
                 metrics_results.append(metric_result)
         except:
-            logger.error(f"Caught exception while calculating metrics: {traceback.format_exc()}", extra=experiment_info)
+            logger.error(f"Caught exception while calculating metric {metric.__name__}: "
+                         f"{traceback.format_exc()}", extra=experiment_info)
             continue
 
     # save results to file
