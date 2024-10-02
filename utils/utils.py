@@ -4,7 +4,6 @@ from pathlib import Path
 import torch
 import numpy as np
 import logging
-from logging import _nameToLevel
 import sys
 from datetime import datetime
 from utils.module_logger import ModuleLogger
@@ -75,7 +74,7 @@ def get_logger(name):
 
 def init_logger(level_name):
     try:
-        level = _nameToLevel[level_name]
+        level = logging.getLevelName(level_name)
     except KeyError:
         raise ValueError("Invalid logging level")
 
