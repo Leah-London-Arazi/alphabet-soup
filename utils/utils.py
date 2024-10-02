@@ -92,3 +92,7 @@ def init_logger(level_name):
 
 def get_root_logger():
     return logging.getLogger(ROOT_LOGGER_NAME)
+
+
+def get_escaped_model_name(model_name):
+    return model_name.replace("/", "_")

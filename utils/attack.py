@@ -13,7 +13,7 @@ from textattack.models.wrappers import HuggingFaceModelWrapper
 
 from consts import FilterTokenIDsMethod
 from utils.defaults import BERT_FILTER_DEFAULT_BATCH_SIZE, TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE, DEFAULT_PREFIXES
-from utils.utils import get_logger
+from utils.utils import get_logger, get_escaped_model_name
 
 logger = get_logger(__name__)
 
@@ -151,7 +151,7 @@ def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confi
     all_token_ids = token_ids.tolist()
 
     for prefix in prefixes:
-        cache_file_name = (f"model={model.name_or_path.replace("/", "_")}"
+        cache_file_name = (f"model={get_escaped_model_name(model.name_or_path)}"
                            f"_target_class={target_class}"
                            f"_confidence_threshold={confidence_threshold}"
                            f"_prefix={prefix}.pt")

@@ -2,7 +2,8 @@ import argparse
 import os.path
 import traceback
 
-from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time
+from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time, \
+    get_escaped_model_name
 
 disable_warnings()
 set_random_seed()
@@ -46,7 +47,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
 
     # save results to file
     results_file_name = (f"experiment_num={experiment_num}"
-                         f"_model_name={experiment_args.model_name.replace("/", "_")}"
+                         f"_model_name={get_escaped_model_name(experiment_args.model_name)}"
                          f"_target_class={experiment_args.target_class}")
     with open(os.path.join(metrics_dir, results_file_name), "w") as f:
         f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
