@@ -5,7 +5,7 @@ defaults:
     - martin-ha/toxic-comment-model
     - facebook/roberta-hate-speech-dynabench-r4-target
   targeted: True
-  target_classes: [0]
+  target_classes: [0, 2]
   confidence_threshold: 0.9
   log_level: DEBUG
   query_budget: 500
