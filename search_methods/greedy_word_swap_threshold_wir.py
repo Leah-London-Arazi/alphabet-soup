@@ -43,6 +43,11 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
 
                 if self.swap_threshold > cur_result.score - results[0].score:
                     cur_result = results[0]
+                    # If the number of words changed, re-calculate the index order
+                    if max(index_order) >= len(cur_result.attacked_text.words):
+                        self.logger.log_result(i=i, result=cur_result)
+                        return self.perform_search(cur_result)
+
                 else:
                     continue
 
