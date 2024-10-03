@@ -79,7 +79,7 @@ Parameters:
   - `num_random_tokens` (`int`): Number of random tokens used with `by_random_tokens`. Default is `10`.
 
 
-### Examples
+## Examples
 Running the GCG based attack with no additional parameters:
 ```bash
 python main.py --attack-name gcg
