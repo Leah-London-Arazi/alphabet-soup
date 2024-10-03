@@ -65,7 +65,7 @@ Each attack has additional parameters to control its behavior. Below is an expla
 
 ### 1. Character Roulette
 
-#### Black Box
+#### <u>Black Box</u>
   
 **Attack name**: [`character_roulette_black_box_random_char`, `character_roulette_black_box_random_word`]
   
@@ -73,7 +73,7 @@ Each attack has additional parameters to control its behavior. Below is an expla
   - `swap_threshold` (`float`): A character or a word in the current text would be replaced if `current_score - new_score < swap_threshold`. Default is `0.1`.
   - `num_transformations_per_word` (`int`): Number of transformations to apply per word. Default is `3`.
 
-#### White Box
+#### <u>White Box</u>
 
 **Attack name**: `character_roulette_white_box`
   
@@ -82,14 +82,14 @@ Each attack has additional parameters to control its behavior. Below is an expla
   - `beam_width` (`int`): The beam width for beam search optimization. Default is `10`.
 
 ### 2. Unbounded Drift
-#### PEZ
+#### <u>PEZ</u>
 
 **Attack name**: `pez`
   
 **Parameters**:
   - `lr` (`float`): Learning rate. Default is `0.4`.
 
-#### GCG
+#### <u>GCG</u>
 
 **Attack name**: `gcg`
   
