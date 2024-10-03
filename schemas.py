@@ -31,7 +31,7 @@ class CharacterRouletteWhiteBoxAttackParams(AttackParams):
 class FilterTokensAttackParams(AttackParams):
     filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
-    score_threshold: int = 0.7
+    score_threshold: float = 0.7
     num_random_tokens: int = 10
 
 

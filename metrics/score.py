@@ -9,7 +9,7 @@ class Score(Metric):
 
 
     def calculate(self, results):
-        scores = []
+        scores_per_class = {}
         classified_as = []
         failed_attack_score = []
         failed_attack_classified_as = []
@@ -19,12 +19,21 @@ class Score(Metric):
                 failed_attack_classified_as.append(result.perturbed_result.output)
             if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
                 continue
-            scores.append(result.perturbed_result.score)
-            classified_as.append(result.perturbed_result.output)
 
-        if len(scores) > 0:
-            self.all_metrics["avg_attack_score"] = round(
-                sum(scores) / len(scores), 2)
+            model_output = result.perturbed_result.output
+            if not scores_per_class.get(model_output):
+                scores_per_class[model_output] = []
+            scores_per_class[model_output].append(result.perturbed_result.score)
+
+            classified_as.append(model_output)
+
+        avg_score_per_class = {}
+        for output_class, scores in scores_per_class.items():
+            if len(scores) > 0:
+                avg_score_per_class[output_class] = round(
+                    (sum(scores) / len(scores)), 2)
+
+        self.all_metrics["attack_score_per_class"] = avg_score_per_class
 
         if len(classified_as) > 0:
             self.all_metrics["attack_prediction_dist"] = np.bincount(classified_as) / len(classified_as)
