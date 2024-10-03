@@ -4,6 +4,7 @@ from utils.utils import set_random_seed, random_sentence, disable_warnings, init
 disable_warnings()
 set_random_seed()
 
+import gc
 import argparse
 import os.path
 import traceback
@@ -78,6 +79,10 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
         except:
             logger.error(f"Caught exception while running experiment: {traceback.format_exc()}")
             continue
+
+        # clean attack
+        del attack
+        gc.collect()
 
         expr_results.append(expr_rep_result)
 
