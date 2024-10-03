@@ -67,42 +67,42 @@ Each attack has additional parameters to control its behavior. Below is an expla
 
 #### _Black Box_
   
-**Attack name**: [`character_roulette_black_box_random_char`, `character_roulette_black_box_random_word`]
+Attack name: [`character_roulette_black_box_random_char`, `character_roulette_black_box_random_word`]
   
-**Parameters**:
+Parameters:
   - `swap_threshold` (`float`): A character or a word in the current text would be replaced if `current_score - new_score < swap_threshold`. Default is `0.1`.
   - `num_transformations_per_word` (`int`): Number of transformations to apply per word. Default is `3`.
 
 #### _White Box_
 
-**Attack name**: `character_roulette_white_box`
+Attack name: `character_roulette_white_box`
   
-**Parameters**:
+Parameters:
   - `top_n` (`int`): Number of top candidate replacements to consider based on gradient information. Default is `3`.
   - `beam_width` (`int`): The beam width for beam search optimization. Default is `10`.
 
 ### 2. Unbounded Drift
 #### _PEZ_
 
-**Attack name**: `pez`
+Attack name: `pez`
   
-**Parameters**:
+Parameters:
   - `lr` (`float`): Learning rate. Default is `0.4`.
 
 #### _GCG_
 
-**Attack name**: `gcg`
+Attack name: `gcg`
   
-**Parameters**:
+Parameters:
   - `n_samples_per_iter` (`int`): Number of candidates to sample at each gcg algorithm iteration. Default is `20`.
   - `top_k` (`int`): Number of top candidates considered. Default is `256`.
 
 ### 3. Meaning Masquerade
 Archived by applying the `pez` or `gcg` attacks with additional parameters.
 
-**Attack name**: [`pez`, `gcg`]
+Attack name: [`pez`, `gcg`]
 
-**Parameters**:
+Parameters:
   - `filter_token_ids_method` (`Optional[FilterTokenIDsMethod]`): Method to filter token IDs (optional).
   - `word_refs` (`list[str]`): List of reference words used in `by_bert_score`or `by_glove_score`.
   - `score_threshold` (`float`): Minimum confidence score used in `by_target_class`. Default is `0.7`.
