@@ -14,7 +14,7 @@ class GCG(BaseAttackRecipe):
     def get_transformation(self):
         return GCGRandomTokenSwap(self.model_wrapper,
                                   goal_function=self.get_goal_function(),
-                                  max_retries_per_iter=self.attack_params.max_retries_per_iter,
+                                  n_samples_per_iter=self.attack_params.n_samples_per_iter,
                                   filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                   word_refs=self.attack_params.word_refs,
                                   score_threshold=self.attack_params.score_threshold,

@@ -24,18 +24,11 @@ def get_model_wrapper(model_name):
     return HuggingFaceModelWrapper(model, tokenizer)
 
 
-def log_attack_result(attack_result):
-    perturbed_result = attack_result.perturbed_result
-    logger.info(f"perturbed text: '{perturbed_result.attacked_text.text}'. \n"
-                f"classified as {perturbed_result.output} with score of {perturbed_result.score}.\n"
-                f"used {perturbed_result.num_queries} queries.")
-
-
 def run_attack(attack, input_text, label=1):
     start = timer()
     attack_result = attack.attack(input_text, label)
     attack_result.attack_time = timer() - start
-    log_attack_result(attack_result)
+    logger.log_final_result(attack_result)
     return attack_result
 
 

@@ -11,7 +11,7 @@ class GCGRandomTokenSwap(Transformation):
     def __init__(self,
                  model_wrapper,
                  goal_function,
-                 max_retries_per_iter,
+                 n_samples_per_iter,
                  top_k,
                  word_refs,
                  score_threshold,
@@ -24,9 +24,10 @@ class GCGRandomTokenSwap(Transformation):
         self.model.to(device=ta_device)
         self.tokenizer = model_wrapper.tokenizer
         self.goal_function = goal_function
+
         self.target_class = self.goal_function.target_class
 
-        self.max_retries_per_iter = max_retries_per_iter
+        self.n_samples_per_iter = n_samples_per_iter
         self.top_k = top_k
 
         self.cache_dir = cache_dir
@@ -45,20 +46,27 @@ class GCGRandomTokenSwap(Transformation):
                                                 word_refs=word_refs,
                                                 score_threshold=score_threshold,
                                                 num_random_tokens=num_random_tokens)
+
     @property
     def is_black_box(self):
         return False
 
-    def _sample_control(self, control_toks, loss_change_estimate):
+    def _sample_control(self, control_toks, loss_change_estimate, n_samples):
         # Identify V_cand from AutoPrompt
         top_k = min(self.top_k, loss_change_estimate.shape[1])
         top_indices = (-loss_change_estimate).topk(top_k, dim=1).indices
-        new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
-        new_token_idx = torch.randint(0, top_k, size=(1,)).item()
-        new_token_val = self.token_ids[top_indices[new_token_pos][new_token_idx]]
-        new_control_toks = control_toks.clone()
-        new_control_toks[new_token_pos] = new_token_val
-        return new_control_toks
+
+        new_control_toks_list = []
+
+        for _ in range(n_samples):
+            new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
+            new_token_idx = torch.randint(0, top_k, size=(1,)).item()
+            new_token_val = self.token_ids[top_indices[new_token_pos][new_token_idx]]
+            new_control_toks = control_toks.clone()
+            new_control_toks[new_token_pos] = new_token_val
+            new_control_toks_list.append(new_control_toks)
+
+        return new_control_toks_list
 
 
     def _get_new_tokens_gcg(self, attacked_text):
@@ -68,35 +76,19 @@ class GCGRandomTokenSwap(Transformation):
                                    padding=True,
                                    truncation=True).input_ids.to(device=ta_device)
 
-        logits = self.model(input_ids=input_ids).logits
-        curr_score = self.goal_function._get_score(logits.squeeze(0), None)
 
         grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.target_class)['gradient'].to(device=ta_device)
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
         loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
 
-        best_input_ids = input_ids.clone().detach().to(device=ta_device)
-        best_score = 0
+        new_input_ids_list = self._sample_control(input_ids.squeeze(0), loss_change_estimate, self.n_samples_per_iter)
 
-        for _ in range(self.max_retries_per_iter):
-            new_input_ids = self._sample_control(input_ids.squeeze(0), loss_change_estimate)
-
-            # check if the replacement is better than the original
-            logits = self.model(input_ids=new_input_ids.unsqueeze(0)).logits
-            new_score = self.goal_function._get_score(logits.squeeze(0), None)
-            if new_score > curr_score:
-                return new_input_ids
-            if new_score > best_score and self.tokenizer.decode(new_input_ids) != attacked_text.tokenizer_input:
-                best_input_ids = new_input_ids.clone().detach().to(device=ta_device)
-                best_score = new_score
-
-        self.logger.warning("Reached max retries")
-        return best_input_ids
+        return new_input_ids_list
 
 
     def _get_transformations(self, current_text, indices_to_replace):
-        new_tokens = self._get_new_tokens_gcg(current_text)
-        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens))]
+        new_tokens_list = self._get_new_tokens_gcg(current_text)
+        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens)) for new_tokens in new_tokens_list]
         
         return transformations
