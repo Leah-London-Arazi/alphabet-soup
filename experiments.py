@@ -28,7 +28,7 @@ def create_metrics_dir():
     return dir_path
 
 
-def write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results):
+def _write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results):
     results_file_name = (f"experiment_num={experiment_num}"
                          f"_model_name={get_escaped_model_name(experiment_args.model_name)}"
                          f"_target_class={experiment_args.target_class}")
@@ -53,7 +53,7 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
                          f"{traceback.format_exc()}", extra=experiment_info)
             continue
 
-    write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results)
+    _write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results)
 
 
 def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir):
