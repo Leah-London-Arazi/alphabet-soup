@@ -16,7 +16,7 @@ pip install -r requirements.txt
 ## Running an Attack
 You can run the attack by executing the `main.py` file.
 
-### Examples:
+### Examples
 Running GCG attack with no additional parameters:
 ```bash
 python main.py --attack-name gcg
