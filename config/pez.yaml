@@ -10,8 +10,6 @@ defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest
       target_classes: [0, 2]
-    - name: finiteautomata/bertweet-base-sentiment-analysis
-      target_classes: [0, 2]
     - name: martin-ha/toxic-comment-model
       target_classes: [1]
   targeted: True

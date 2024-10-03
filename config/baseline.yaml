@@ -4,7 +4,6 @@ metrics:
 defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest
-    - name: finiteautomata/bertweet-base-sentiment-analysis
     - name: martin-ha/toxic-comment-model
   targeted: False
   confidence_threshold: 0

@@ -10,8 +10,6 @@ defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest
       target_classes: [0, 2]
-    - name: finiteautomata/bertweet-base-sentiment-analysis
-      target_classes: [0, 2]
     - name: martin-ha/toxic-comment-model
       target_classes: [1]
   targeted: True
@@ -23,16 +21,10 @@ defaults:
 experiments:
   - attack_name: character_roulette_black_box_random_char
     rand_init_text: True
-  - attack_name: character_roulette_black_box_random_char
-    rand_init_text: False
   - attack_name: character_roulette_black_box_random_word
     rand_init_text: True
-  - attack_name: character_roulette_black_box_random_word
-    rand_init_text: False
   - attack_name: character_roulette_white_box
     rand_init_text: True
-  - attack_name: character_roulette_white_box
-    rand_init_text: False
   - attack_name: pez
     rand_init_text: True
   - attack_name: pez
