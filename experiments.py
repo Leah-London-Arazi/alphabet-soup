@@ -9,9 +9,10 @@ import os.path
 import traceback
 from tqdm import trange
 from omegaconf import OmegaConf
-from consts import MetricName
+from utils.metrics import MetricName
 from utils.attack import run_attack
-from utils.recipes import get_attack_recipe_from_args, METRIC_NAME_TO_CLASS
+from utils.recipes import get_attack_recipe_from_args
+from utils.metrics import METRIC_NAME_TO_CLASS
 from utils.utils import get_logger
 
 METRICS_RESULTS_DIR_NAME = "metrics_results"
