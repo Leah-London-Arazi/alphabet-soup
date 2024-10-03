@@ -51,16 +51,22 @@ class GCGRandomTokenSwap(Transformation):
     def is_black_box(self):
         return False
 
-    def _sample_control(self, control_toks, loss_change_estimate):
+    def _sample_control(self, control_toks, loss_change_estimate, n_samples):
         # Identify V_cand from AutoPrompt
         top_k = min(self.top_k, loss_change_estimate.shape[1])
         top_indices = (-loss_change_estimate).topk(top_k, dim=1).indices
-        new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
-        new_token_idx = torch.randint(0, top_k, size=(1,)).item()
-        new_token_val = self.token_ids[top_indices[new_token_pos][new_token_idx]]
-        new_control_toks = control_toks.clone()
-        new_control_toks[new_token_pos] = new_token_val
-        return new_control_toks
+
+        new_control_toks_list = []
+
+        for _ in range(n_samples):
+            new_token_pos = torch.randint(low=0, high=len(control_toks), size=(1,)).item()
+            new_token_idx = torch.randint(0, top_k, size=(1,)).item()
+            new_token_val = self.token_ids[top_indices[new_token_pos][new_token_idx]]
+            new_control_toks = control_toks.clone()
+            new_control_toks[new_token_pos] = new_token_val
+            new_control_toks_list.append(new_control_toks)
+
+        return new_control_toks_list
 
 
     def _get_new_tokens_gcg(self, attacked_text):
@@ -74,13 +80,9 @@ class GCGRandomTokenSwap(Transformation):
         grad = get_grad_wrt_func(self.model_wrapper, input_ids, self.target_class)['gradient'].to(device=ta_device)
         grad = grad / grad.norm(dim=-1, keepdim=True)
 
-        self.prev_loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
+        loss_change_estimate = grad @ self.token_embeddings(self.token_ids).T
 
-        new_input_ids_list = []
-            
-        for _ in range(self.n_samples_per_iter):
-            new_input_ids = self._sample_control(input_ids.squeeze(0), self.prev_loss_change_estimate)
-            new_input_ids_list.append(new_input_ids)
+        new_input_ids_list = self._sample_control(input_ids.squeeze(0), loss_change_estimate, self.n_samples_per_iter)
 
         return new_input_ids_list
 
