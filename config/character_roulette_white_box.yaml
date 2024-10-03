@@ -1,0 +1,29 @@
+metrics:
+  - entropy
+  - perplexity
+  - queries
+  - success_rate
+  - time
+  - score
+
+defaults:
+  models:
+    - name: cardiffnlp/twitter-roberta-base-sentiment-latest
+      target_classes: [0, 2]
+    - name: finiteautomata/bertweet-base-sentiment-analysis
+      target_classes: [0, 2]
+    - name: martin-ha/toxic-comment-model
+      target_classes: [1]
+    - name: facebook/roberta-hate-speech-dynabench-r4-target
+      target_classes: [1]
+  targeted: True
+  confidence_threshold: 0.9
+  query_budget: 500
+  initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
+  num_repetitions: 100
+
+experiments:
+  - attack_name: character_roulette_white_box
+    rand_init_text: True
+  - attack_name: character_roulette_white_box
+    rand_init_text: False
