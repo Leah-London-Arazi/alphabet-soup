@@ -41,7 +41,7 @@ class GreedyWordSwapThresholdWIR(GreedyWordSwapWIR):
                 if len(results) == 0:
                     continue
 
-                if results[0].score > cur_result.score - self.swap_threshold:
+                if self.swap_threshold > cur_result.score - results[0].score:
                     cur_result = results[0]
                 else:
                     continue

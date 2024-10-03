@@ -28,18 +28,17 @@ class CharacterRouletteWhiteBoxAttackParams(AttackParams):
     beam_width: int = 10
 
 
-class PEZAttackParams(AttackParams):
-    lr: float = 0.4
+class FilterTokensAttackParams(AttackParams):
     filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
     word_refs: list[str] = []
     score_threshold: int = 0.7
     num_random_tokens: int = 10
 
 
-class GCGAttackParams(AttackParams):
+class PEZAttackParams(FilterTokensAttackParams):
+    lr: float = 0.4
+
+
+class GCGAttackParams(FilterTokensAttackParams):
     max_retries_per_iter: int = 100
     top_k: int = 256
-    filter_token_ids_method: Optional[FilterTokenIDsMethod] = None
-    word_refs: list[str] = []
-    score_threshold: int = 0.7
-    num_random_tokens: int = 10
