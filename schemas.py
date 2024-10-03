@@ -40,5 +40,5 @@ class PEZAttackParams(FilterTokensAttackParams):
 
 
 class GCGAttackParams(FilterTokensAttackParams):
-    max_retries_per_iter: int = 100
+    n_samples_per_iter: int = 20
     top_k: int = 256

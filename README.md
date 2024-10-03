@@ -2,6 +2,18 @@
 Generating high confidence fooling inputs for NLP models.
 
 
+## Installation
+Make sure you have python installed with version `>=3.11`. Using conda:
+```shell
+conda create -n alphabet-soup python=3.11
+conda activate alphabet-soup
+```
+Install the project's dependencies:
+```shell
+pip install -r requirements.txt
+```
+
+
 ## Attacks and Attack Parameters
 Our attacks are implemented in TextAttack framework, and are defined by a combination of goal function, constraints, search method and transformations. For more details check out https://github.com/QData/TextAttack.
 Each attack has additional parameters to control its behavior. Below is an explanation of the parameters for each attack type.

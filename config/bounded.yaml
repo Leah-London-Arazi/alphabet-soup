@@ -1,9 +1,18 @@
+metrics:
+  - entropy
+  - perplexity
+  - queries
+  - success_rate
+  - time
+  - score
+
 defaults:
-  model_names:
-    - cardiffnlp/twitter-roberta-base-sentiment-latest
-    - finiteautomata/bertweet-base-sentiment-analysis
+  models:
+    - name: cardiffnlp/twitter-roberta-base-sentiment-latest
+      target_classes: [0, 2]
+    - name: finiteautomata/bertweet-base-sentiment-analysis
+      target_classes: [0, 2]
   targeted: True
-  target_classes: [0, 2]
   confidence_threshold: 0.9
   query_budget: 500
   initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"

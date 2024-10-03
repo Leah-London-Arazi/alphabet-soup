@@ -27,6 +27,14 @@ score: {result.score}
 num_queries: {result.num_queries}"""
         )
 
+
+    def log_final_result(self, attack_result):
+        perturbed_result = attack_result.perturbed_result
+        self.info(f"perturbed text: {perturbed_result.attacked_text.text}\n"
+                  f"classified as {perturbed_result.output} with score of {perturbed_result.score}\n"
+                  f"used {perturbed_result.num_queries} queries.")
+
+
     def process(self, msg, kwargs):
         if 'extra' not in kwargs:
             kwargs['extra'] = self.extra
