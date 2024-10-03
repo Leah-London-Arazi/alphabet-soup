@@ -73,10 +73,7 @@ def get_logger(name):
 
 
 def init_logger(level_name):
-    try:
-        level = logging.getLevelName(level_name)
-    except KeyError:
-        raise ValueError("Invalid logging level")
+    level = logging.getLevelName(level_name)
 
     logging.basicConfig(level=level)
     logger = logging.getLogger(ROOT_LOGGER_NAME)
