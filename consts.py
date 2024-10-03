@@ -15,3 +15,11 @@ class AttackName(enum.Enum):
     pez = "pez"
     gcg = "gcg"
 
+
+class MetricName(enum.Enum):
+    ENTROPY = "entropy"
+    PERPLEXITY = "perplexity"
+    QUERIES = "queries"
+    SUCCESS_RATE = "success_rate"
+    TIME = "time"
+    SCORE = "score"
