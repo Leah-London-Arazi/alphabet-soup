@@ -10,7 +10,7 @@ defaults:
   targeted: False
   confidence_threshold: 0
   query_budget: 1
-  num_repetitions: 250
+  num_repetitions: 100
 
 experiments:
   - attack_name: baseline

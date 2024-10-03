@@ -16,7 +16,7 @@ defaults:
   confidence_threshold: 0.9
   query_budget: 500
   initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
-  num_repetitions: 250
+  num_repetitions: 100
 
 experiments:
   # PEZ
