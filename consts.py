@@ -14,3 +14,4 @@ class AttackName(enum.Enum):
     character_roulette_white_box = "character_roulette_white_box"
     pez = "pez"
     gcg = "gcg"
+

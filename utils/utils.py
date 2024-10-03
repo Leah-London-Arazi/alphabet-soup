@@ -4,7 +4,6 @@ from pathlib import Path
 import torch
 import numpy as np
 import logging
-from logging import _nameToLevel
 import sys
 from datetime import datetime
 from utils.module_logger import ModuleLogger
@@ -74,10 +73,7 @@ def get_logger(name):
 
 
 def init_logger(level_name):
-    try:
-        level = _nameToLevel[level_name]
-    except KeyError:
-        raise ValueError("Invalid logging level")
+    level = logging.getLevelName(level_name)
 
     logging.basicConfig(level=level)
     logger = logging.getLogger(ROOT_LOGGER_NAME)
@@ -92,3 +88,7 @@ def init_logger(level_name):
 
 def get_root_logger():
     return logging.getLogger(ROOT_LOGGER_NAME)
+
+
+def get_escaped_model_name(model_name):
+    return model_name.replace("/", "_")
