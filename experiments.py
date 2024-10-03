@@ -1,16 +1,15 @@
-import argparse
-import os.path
-import traceback
-
-from consts import MetricName
 from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time, \
     get_escaped_model_name
 
 disable_warnings()
 set_random_seed()
 
+import argparse
+import os.path
+import traceback
 from tqdm import trange
 from omegaconf import OmegaConf
+from consts import MetricName
 from utils.attack import run_attack
 from utils.recipes import get_attack_recipe_from_args, METRIC_NAME_TO_CLASS
 from utils.utils import get_logger
