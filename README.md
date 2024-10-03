@@ -107,3 +107,7 @@ Archived by applying the `pez` or `gcg` attacks with additional parameters.
   - `word_refs` (`list[str]`): List of reference words used in `by_bert_score`or `by_glove_score`.
   - `score_threshold` (`float`): Minimum confidence score used in `by_target_class`. Default is `0.7`.
   - `num_random_tokens` (`int`): Number of random tokens used in `by_random_tokens`. Default is `10`.
+
+
+## Credits
+Special thanks to [Theator](https://theator.io) for providing us compute resources :heart:
