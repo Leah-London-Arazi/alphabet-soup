@@ -4,19 +4,21 @@ from textattack.metrics import Metric
 
 
 class Entropy(Metric):
-    def __init__(self):
+    def __init__(self, include_skipped_results=False):
         self.all_metrics = {}
+        self.include_skipped_results = include_skipped_results
 
     def calculate(self, results):
         entropy_results = []
         for result in results:
-            if isinstance(result, (FailedAttackResult, SkippedAttackResult)):
+            if isinstance(result, FailedAttackResult):
                 continue
-            else:
-                entropy_results.append(
-                    Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
-                )
-        
+            if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
+                continue
+            entropy_results.append(
+                Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
+            )
+
         if len(entropy_results) != 0:
             self.all_metrics["avg_attack_entropy"] = sum(entropy_results) / len(entropy_results)
 

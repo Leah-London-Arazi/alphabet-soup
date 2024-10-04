@@ -1,7 +1,11 @@
 metrics:
-  - score
-  - perplexity
-  - entropy
+  - name: score
+    metric_params:
+      include_skipped_results: True
+  - name: perplexity
+  - name: entropy
+    metric_params:
+      include_skipped_results: True
 
 defaults:
   models:
@@ -15,3 +19,9 @@ defaults:
 experiments:
   - attack_name: baseline
     rand_init_text: True
+  - attack_name: baseline
+    models:
+      - name: cardiffnlp/twitter-roberta-base-sentiment-latest
+    dataset:
+      name: nyu-mll/glue
+      subset: cola

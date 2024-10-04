@@ -3,7 +3,7 @@ from textattack.metrics import Metric
 import numpy as np
 
 class Score(Metric):
-    def __init__(self, include_skipped_results=True):
+    def __init__(self, include_skipped_results=False):
         self.all_metrics = {}
         self.include_skipped_results = include_skipped_results
 

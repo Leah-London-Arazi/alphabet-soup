@@ -1,10 +1,10 @@
 metrics:
-  - entropy
-  - perplexity
-  - queries
-  - success_rate
-  - time
-  - score
+  - name: entropy
+  - name: perplexity
+  - name: queries
+  - name: success_rate
+  - name: time
+  - name: score
 
 defaults:
   models:
