@@ -1,5 +1,7 @@
 metrics:
   - score
+  - perplexity
+  - entropy
 
 defaults:
   models:
