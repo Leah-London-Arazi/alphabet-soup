@@ -4,9 +4,11 @@ disable_warnings()
 
 import argparse
 from consts import AttackName
-from utils.attack import run_attack
-from utils.recipes import get_attack_recipe_from_args
+from utils.recipes import get_attack_recipe_from_args, run_attack
 from utils.utils import random_sentence, init_logger
+from utils.utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_parser():
@@ -43,6 +45,7 @@ def main():
 
     attack_recipe = get_attack_recipe_from_args(args, from_command_line=True)
     attack = attack_recipe.get_attack()
+    logger.info("Running attack...")
     run_attack(attack=attack, input_text=args.input_text)
 
 

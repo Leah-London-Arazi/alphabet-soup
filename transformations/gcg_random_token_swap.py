@@ -1,7 +1,8 @@
 import torch
 from textattack.shared import AttackedText
 from textattack.transformations import Transformation
-from utils.attack import get_grad_wrt_func, get_filtered_token_ids
+from utils.models import get_grad_wrt_func
+from utils.filter import get_filtered_token_ids
 from textattack.shared.utils import device as ta_device
 from utils.defaults import DEFAULT_CACHE_DIR
 from utils.utils import create_dir, get_logger
@@ -71,7 +72,7 @@ class GCGRandomTokenSwap(Transformation):
 
     def _get_new_tokens_gcg(self, attacked_text):
         input_ids = self.tokenizer(attacked_text.tokenizer_input,
-                                   add_special_tokens=False,
+                                   add_special_tokens=True,
                                    return_tensors="pt",
                                    padding=True,
                                    truncation=True).input_ids.to(device=ta_device)
@@ -89,6 +90,6 @@ class GCGRandomTokenSwap(Transformation):
 
     def _get_transformations(self, current_text, indices_to_replace):
         new_tokens_list = self._get_new_tokens_gcg(current_text)
-        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens)) for new_tokens in new_tokens_list]
+        transformations = [AttackedText(text_input=self.tokenizer.decode(token_ids=new_tokens, skip_special_tokens=True)) for new_tokens in new_tokens_list]
         
         return transformations

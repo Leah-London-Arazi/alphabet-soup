@@ -33,9 +33,10 @@ You can run one of our implemented attacks by executing the `main.py` file.
 Our attacks are implemented using the TextAttack framework, and are defined by a combination of a goal function, constraints, a search method and transformations. For more details check out https://github.com/QData/TextAttack.
 Each attack has additional parameters to control its behavior. Below is an explanation of the parameters for each attack type.
 
-### 1. Character Roulette
+### Random Chaos
+#### 1. Character Roulette
 
-#### _Black Box_
+#### a. Black Box
   
 Attack name: [`character_roulette_black_box_random_char`, `character_roulette_black_box_random_word`]
   
@@ -43,7 +44,7 @@ Parameters:
   - `swap_threshold` (`float`): A character or a word in the current text would be replaced if `current_score - new_score < swap_threshold`. Default is `0.1`.
   - `num_transformations_per_word` (`int`): Number of transformations to apply per word. Default is `3`.
 
-#### _White Box_
+#### b. White Box
 
 Attack name: `character_roulette_white_box`
   
@@ -51,15 +52,15 @@ Parameters:
   - `top_n` (`int`): Number of top candidate replacements to consider based on gradient information. Default is `3`.
   - `beam_width` (`int`): The beam width for beam search optimization. Default is `10`.
 
-### 2. Unbounded Drift
-#### _PEZ_
+#### 2. Unbounded Drift
+#### a. PEZ
 
 Attack name: `pez`
   
 Parameters:
   - `lr` (`float`): Learning rate. Default is `0.4`.
 
-#### _GCG_
+#### b. GCG
 
 Attack name: `gcg`
   
@@ -67,16 +68,35 @@ Parameters:
   - `top_k` (`int`): Number of top candidates to consider based on gradient information. Default is `256`.
   - `n_samples_per_iter` (`int`): Number of candidates to sample from the top k at each gcg algorithm iteration. Default is `20`.
 
-### 3. Meaning Masquerade
+### Patterned Chaos
 Implemented using the `pez` or `gcg` attacks with additional parameters.
+
+#### Filter methods
+At each step, `pez` and `gcg` attacks select replacement candidates from the available token IDs. 
+We implemented four different filtering algorithms to narrow down the token IDs to a specific subset:
+
+1. `by_target_class`: Filters out token IDs that the model classifies as the target class with a certain level of confidence.
+2. `by_bert_score`: Selects only the token IDs that have a high [BERT score](https://arxiv.org/pdf/1904.09675) compared to one of the given reference words.
+3. `by_glove_score`: Selects only the token IDs that have a high GloVe similarity score to one of the given reference words.
+4. `by_random_tokens`: a subset of randomly chosen token IDs.
+
+#### 1. Syntactic Sabotage
+
+Attack name: [`pez`, `gcg`]
+
+Parameters: 
+  - `filter_token_ids_method` (`Optional[FilterTokenIDsMethod]`): Use `by_random_tokens` filter method.
+  - `num_random_tokens` (`int`): Number of random tokens used. Default is `10`.
+
+
+#### 2. Meaning Masquerade
 
 Attack name: [`pez`, `gcg`]
 
 Parameters:
-  - `filter_token_ids_method` (`Optional[FilterTokenIDsMethod]`): Method with which to filter token IDs (optional).
+  - `filter_token_ids_method` (`Optional[FilterTokenIDsMethod]`): Use one of [`by_target_class`, `by_glove_score`, `by_bert_score`].
   - `word_refs` (`list[str]`): List of reference words used with filter methods `by_bert_score`and `by_glove_score`.
-  - `score_threshold` (`float`): Minimum confidence score used in `by_bert_score` and `by_glove_score`. Default is `0.7`.
-  - `num_random_tokens` (`int`): Number of random tokens used with `by_random_tokens`. Default is `10`.
+  - `score_threshold` (`float`): The minimum confidence score used in `by_bert_score` and `by_glove_score` filters, and the maximum confidence score used in `by_target_class` filter. Default is `0.7`.
 
 
 ## Examples
@@ -110,6 +130,20 @@ Perturbed text:  bright bright bright red flower bright brightred bright bright 
 used 352 queries.
 ```
 
+Running meaning masquerade with PEZ and target class filter method:
+```bash
+python main.py --attack-name pez --model-name martin-ha/toxic-comment-model --attack-params filter_token_ids_method=by_target_class score_threshold=0.05 --target-class 1
+```
+Output:
+```
+0 (100%) --> 1 (96%)
+
+Original text: xMB G(tGg$ ]Huu~ (d)oC{ nGu zI6+ #VQ0w?$ lB6tE t5XWtN; uyXYt]bl b!-mV +^~RH'AW9x V4821~ch< 7Uz]S#} q9v=' SIN pkMu}t}%}O uRQ G&x'wb]1 C{KW~FYe%
+
+Perturbed text: brief.pha eyes invented ি sc tooth a pale rag tooth a stain you! hallway your leather tooth corner leather embrace since rag.rite stone vimes life leather vimes. him leather he!!! eyes! leather strange! eyes tooth! ি. vimes your lips nedra likeless dressed! ᅢ eyes thick tooth!! man him man bones corner thickorescence vimes man ュ yours your! lips! corner the people. ァ vimes 艹 sc vimes vimes vimes ª man man thick des tho manorescence you.. tooth you 彳
+
+used 39 queries.
+```
 
 ## Credits
 Special thanks to [Theator](https://theator.io) for providing us compute resources :heart:

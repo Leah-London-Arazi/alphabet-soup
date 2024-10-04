@@ -14,7 +14,7 @@ defaults:
       target_classes: [1]
   targeted: True
   confidence_threshold: 0.9
-  query_budget: 500
+  query_budget: 750
   initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
   num_repetitions: 100
 

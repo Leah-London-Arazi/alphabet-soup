@@ -8,7 +8,10 @@ from schemas import (CharacterRouletteBlackBoxAttackParams,
 from recipes.character_roulette import CharacterRouletteBlackBoxRandomChar, CharacterRouletteBlackBoxRandomWord, CharacterRouletteWhiteBox
 from recipes.pez import PEZ
 from recipes.gcg import GCG
+from timeit import default_timer as timer
+from utils.utils import get_logger
 
+logger = get_logger(__name__)
 
 ATTACK_NAME_TO_RECIPE = {
     AttackName.character_roulette_black_box_random_char: CharacterRouletteBlackBoxRandomChar,
@@ -49,4 +52,9 @@ def get_attack_recipe_from_args(args, from_command_line=False):
     return attack_recipe
 
 
-
+def run_attack(attack, input_text, label=1):
+    start = timer()
+    attack_result = attack.attack(input_text, label)
+    attack_result.attack_time = timer() - start
+    logger.log_final_result(attack_result)
+    return attack_result

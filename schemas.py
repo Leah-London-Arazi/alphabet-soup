@@ -24,8 +24,8 @@ class CharacterRouletteBlackBoxAttackParams(AttackParams):
 
 
 class CharacterRouletteWhiteBoxAttackParams(AttackParams):
-    top_n: int = 3
-    beam_width: int = 10
+    top_n: int = 10
+    beam_width: int = 5
 
 
 class FilterTokensAttackParams(AttackParams):
@@ -40,5 +40,5 @@ class PEZAttackParams(FilterTokensAttackParams):
 
 
 class GCGAttackParams(FilterTokensAttackParams):
-    n_samples_per_iter: int = 20
+    n_samples_per_iter: int = 15
     top_k: int = 256
