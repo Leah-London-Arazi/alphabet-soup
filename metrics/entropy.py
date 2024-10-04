@@ -1,5 +1,5 @@
 import torch
-from textattack.attack_results import FailedAttackResult, SkippedAttackResult
+from textattack.attack_results import FailedAttackResult, SkippedAttackResult, SuccessfulAttackResult
 from textattack.metrics import Metric
 
 
@@ -15,11 +15,12 @@ class Entropy(Metric):
                 continue
             if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
                 continue
-            entropy_results.append(
-                Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
-            )
+            if isinstance(result, SuccessfulAttackResult):
+                entropy_results.append(
+                    Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
+                )
 
-        if len(entropy_results) != 0:
+        if len(entropy_results) > 0:
             self.all_metrics["avg_attack_entropy"] = sum(entropy_results) / len(entropy_results)
 
         return self.all_metrics

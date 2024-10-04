@@ -1,4 +1,4 @@
-from textattack.attack_results import FailedAttackResult, SkippedAttackResult
+from textattack.attack_results import FailedAttackResult, SkippedAttackResult, SuccessfulAttackResult
 from textattack.metrics import Metric
 
 
@@ -11,7 +11,7 @@ class Time(Metric):
         for result in results:
             if isinstance(result, (FailedAttackResult, SkippedAttackResult)):
                 continue
-            else:
+            if isinstance(result, SuccessfulAttackResult):
                 if hasattr(result, "attack_time"):
                     time_results.append(result.attack_time)
 

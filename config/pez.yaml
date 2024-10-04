@@ -25,16 +25,16 @@ experiments:
     rand_init_text: True
     models:
       - name: martin-ha/toxic-comment-model
-        target_classes: [ 1 ]
+        target_classes: [1]
     attack_params:
       - lr: 2
   - attack_name: pez
     rand_init_text: False
     models:
       - name: cardiffnlp/twitter-roberta-base-sentiment-latest
-        target_classes: [ 0, 2 ]
+        target_classes: [0, 2]
   - attack_name: pez
     rand_init_text: True
     models:
       - name: cardiffnlp/twitter-roberta-base-sentiment-latest
-        target_classes: [ 0, 2 ]
+        target_classes: [0, 2]
