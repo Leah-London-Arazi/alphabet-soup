@@ -4,6 +4,8 @@ from utils.utils import set_random_seed, random_sentence, disable_warnings, init
 disable_warnings()
 set_random_seed()
 
+import numpy as np
+from textattack.datasets import HuggingFaceDataset
 import gc
 import argparse
 import os.path
@@ -47,11 +49,11 @@ def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_
     metrics_results = []
     for metric in metrics:
         try:
-            metric_result = metric().calculate(results)
+            metric_result = metric.calculate(results)
             if metric_result:
                 metrics_results.append(metric_result)
         except:
-            logger.error(f"Caught exception while calculating metric {metric.__name__}: "
+            logger.error(f"Caught exception while calculating metric {metric.__class__.__name__}: "
                          f"{traceback.format_exc()}", extra=experiment_info)
             continue
 
@@ -67,10 +69,14 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
 
     expr_results = []
 
+    dataset = experiment_args.get("dataset")
     for _ in trange(experiment_args.num_repetitions):
         attack = attack_recipe.get_attack()
 
-        if experiment_args.rand_init_text:
+        if dataset:
+            hface_dataset = HuggingFaceDataset(dataset.name, dataset.subset)
+            init_text = hface_dataset[np.random.choice(len(hface_dataset))][0]["sentence"]
+        elif experiment_args.rand_init_text:
             init_text = random_sentence()
         else:
             init_text = experiment_args.initial_text
@@ -93,10 +99,19 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
                       experiment_args=experiment_args)
 
 
+def _get_metrics(metrics_config):
+    metrics = []
+    for metric in metrics_config:
+        metric_class = METRIC_NAME_TO_CLASS[MetricName(metric.name)]
+        metrics_args = metric.get("metric_params", {})
+        metrics.append(metric_class(**metrics_args))
+    return metrics
+
+
 def run_experiments(config_file):
     config = OmegaConf.load(config_file)
 
-    metrics = [METRIC_NAME_TO_CLASS[MetricName(metric)] for metric in config.metrics]
+    metrics = _get_metrics(config.metrics)
     metrics_dir = create_metrics_dir()
 
     for experiment_num, experiment_config in enumerate(config.experiments):
