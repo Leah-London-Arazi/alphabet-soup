@@ -11,7 +11,6 @@ class PEZ(BaseAttackRecipe):
         return PEZGradientSearch(self.model_wrapper,
                                  target_class=self.target_class,
                                  lr=self.attack_params.lr,
-                                 max_iter=self.query_budget,
                                  filter_token_ids_method=self.attack_params.filter_token_ids_method,
                                  word_refs=self.attack_params.word_refs,
                                  score_threshold=self.attack_params.score_threshold,
