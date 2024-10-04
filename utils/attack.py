@@ -161,9 +161,12 @@ def get_filtered_token_ids_by_target_class(model, tokenizer, target_class, confi
             token_ids_prefix = torch.load(cache_file_path)
 
         else:
-            filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch, model,
-                                                                          tokenizer, target_class,
-                                                                          confidence_threshold, prefix)
+            filter_func = lambda token_ids_batch: _filter_by_target_class(token_ids_batch=token_ids_batch,
+                                                                          model=model,
+                                                                          tokenizer=tokenizer,
+                                                                          target_class=target_class,
+                                                                          confidence_threshold=confidence_threshold,
+                                                                          prefix=prefix)
             token_ids_prefix = filter_token_ids_by_func(tokenizer=tokenizer,
                                                         batch_size=TARGET_CLASS_FILTER_DEFAULT_BATCH_SIZE,
                                                         filter_func=filter_func)

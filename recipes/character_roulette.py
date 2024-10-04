@@ -17,7 +17,7 @@ class CharacterRouletteBlackBox(BaseAttackRecipe):
 
     def get_search_method(self):
        return GreedyWordSwapThresholdWIR(swap_threshold=self.attack_params.swap_threshold,
-                                   num_transformations_per_word=self.attack_params.num_transformations_per_word)
+                                         num_transformations_per_word=self.attack_params.num_transformations_per_word)
 
 
 class CharacterRouletteBlackBoxRandomChar(CharacterRouletteBlackBox):
