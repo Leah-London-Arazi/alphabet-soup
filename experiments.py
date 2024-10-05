@@ -69,8 +69,6 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
 
     dataset = experiment_args.get("dataset")
     for _ in trange(experiment_args.num_repetitions):
-        attack = attack_recipe.get_attack()
-
         if dataset:
             hface_dataset = HuggingFaceDataset(dataset.name, dataset.subset)
             init_text = hface_dataset[np.random.choice(len(hface_dataset))][0]["sentence"]
@@ -79,6 +77,7 @@ def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir)
         else:
             init_text = experiment_args.initial_text
         try:
+            attack = attack_recipe.get_attack()
             expr_rep_result = run_attack(attack=attack, input_text=init_text)
         except:
             logger.error(f"Caught exception while running experiment: {traceback.format_exc()}")
