@@ -23,5 +23,5 @@ defaults:
 
 experiments:
   - name: pez_unbounded_rand_init
-  - attack_name: pez_unbounded
+  - name: pez_unbounded
     input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
