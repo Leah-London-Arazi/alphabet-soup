@@ -12,14 +12,15 @@ defaults:
       target_classes: [0, 2]
     - name: martin-ha/toxic-comment-model
       target_classes: [1]
-  targeted: True
-  confidence_threshold: 0.9
-  query_budget: 750
-  initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
+  attack_recipe:
+    confidence_threshold: 0.9
+    query_budget: 750
+    attack_name: gcg
+    targeted: True
   num_repetitions: 100
 
+
 experiments:
-  - attack_name: gcg
-    rand_init_text: True
-  - attack_name: gcg
-    rand_init_text: False
+  - name: gcg_unbounded_rand_init
+  - name: gcg_unbounded
+    input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"

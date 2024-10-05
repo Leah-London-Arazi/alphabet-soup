@@ -12,7 +12,7 @@ import os.path
 import traceback
 from tqdm import trange
 from omegaconf import OmegaConf
-from utils.metrics import MetricName, METRIC_NAME_TO_CLASS
+from experiment.experiment import Experiment
 from utils.recipes import get_attack_recipe_from_args, run_attack
 from utils.utils import get_logger
 
@@ -22,7 +22,7 @@ METRICS_RESULTS_DIR_NAME = "metrics_results"
 logger = get_logger(__name__)
 
 
-def create_metrics_dir():
+def create_results_dir():
     current_time = get_current_time()
     current_dir = os.path.dirname(os.path.realpath(__file__))
     dir_path = os.path.join(current_dir, METRICS_RESULTS_DIR_NAME, current_time)
@@ -30,103 +30,36 @@ def create_metrics_dir():
     return dir_path
 
 
-def _write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results):
-    results_file_name = (f"experiment_num={experiment_num}"
-                         f"_model_name={get_escaped_model_name(experiment_args.model_name)}"
-                         f"_target_class={experiment_args.target_class}")
-    results_file_path = os.path.join(metrics_dir, results_file_name)
-    with open(os.path.join(results_file_path), "w") as f:
-        f.write(f"experiment_args={experiment_args}\nmetrics_results={metrics_results}")
-
-    logger.info(f"Metric results were written to file: {results_file_path}", extra=experiment_info)
-
-
-def calculate_metrics(results, metrics, metrics_dir, experiment_num, experiment_args):
-    experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
-
-    metrics_results = []
-    for metric in metrics:
-        try:
-            metric_result = metric.calculate(results)
-            if metric_result:
-                metrics_results.append(metric_result)
-        except:
-            logger.error(f"Caught exception while calculating metric {metric.__class__.__name__}: "
-                         f"{traceback.format_exc()}", extra=experiment_info)
-            continue
-
-    _write_metrics_to_file(experiment_num, experiment_args, experiment_info, metrics_dir, metrics_results)
-
-
-def run_single_experiment(experiment_num, experiment_args, metrics, metrics_dir):
-    experiment_info = dict(experiment_num=experiment_num, experiment_args=experiment_args)
-    logger.update_extra(extra=experiment_info)
-    logger.info(f"Running experiment", extra=experiment_info)
-
-    attack_recipe = get_attack_recipe_from_args(experiment_args, from_command_line=False)
-
-    expr_results = []
-
-    dataset = experiment_args.get("dataset")
-    for _ in trange(experiment_args.num_repetitions):
-        if dataset:
-            hface_dataset = HuggingFaceDataset(dataset.name, dataset.subset)
-            init_text = hface_dataset[np.random.choice(len(hface_dataset))][0]["sentence"]
-        elif experiment_args.rand_init_text:
-            init_text = random_sentence()
-        else:
-            init_text = experiment_args.initial_text
-        try:
-            attack = attack_recipe.get_attack()
-            expr_rep_result = run_attack(attack=attack, input_text=init_text)
-        except:
-            logger.error(f"Caught exception while running experiment: {traceback.format_exc()}")
-            continue
-
-        # clean attack
-        del attack
-        gc.collect()
-
-        expr_results.append(expr_rep_result)
-
-    calculate_metrics(results=expr_results,
-                      metrics=metrics,
-                      metrics_dir=metrics_dir,
-                      experiment_num=experiment_num,
-                      experiment_args=experiment_args)
-
-
-def _get_metrics(metrics_config):
-    metrics = []
-    for metric in metrics_config:
-        metric_class = METRIC_NAME_TO_CLASS[MetricName(metric.name)]
-        metrics_args = metric.get("metric_params", {})
-        metrics.append(metric_class(**metrics_args))
-    return metrics
-
-
 def run_experiments(config_file):
     config = OmegaConf.load(config_file)
 
-    metrics = _get_metrics(config.metrics)
-    metrics_dir = create_metrics_dir()
+    base_results_dir = create_results_dir()
 
-    for experiment_num, experiment_config in enumerate(config.experiments):
+    for experiment_config in config.experiments:
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
-        # create metrics directory for each attack
-        attack_metrics_dir = os.path.join(metrics_dir, experiment_args.attack_name)
-        create_dir(attack_metrics_dir)
 
         for model in experiment_args.models:
-            if not experiment_args.targeted:
-                experiment_args.target_classes = [0]
             for target_class in OmegaConf.merge(model, experiment_args).target_classes:
-                experiment_args.model_name = model.name
-                experiment_args.target_class = target_class
-                run_single_experiment(experiment_num=experiment_num,
-                                      experiment_args=experiment_args,
-                                      metrics=metrics,
-                                      metrics_dir=attack_metrics_dir)
+                experiment_name = experiment_args.name
+                attack_recipe_args = experiment_args.attack_recipe
+                attack_recipe_args.model_name = model.name
+                attack_recipe_args.target_class = target_class
+                input_text = experiment_args.get("input_text")
+                dataset = experiment_args.get("dataset")
+                num_repetitions = experiment_args.num_repetitions
+
+                attack_recipe = get_attack_recipe_from_args(attack_recipe_args, from_command_line=False)
+                
+                experiment = Experiment(name=experiment_name,
+                                        attack_recipe=attack_recipe,
+                                        input_text=input_text,
+                                        dataset=dataset,
+                                        num_repetitions=num_repetitions,
+                                        metrics_config = config.metrics,
+                                        base_metrics_results_dir=base_results_dir, )
+
+
+                experiment.run()
 
 
 def get_parser():

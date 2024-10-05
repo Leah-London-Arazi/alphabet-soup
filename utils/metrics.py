@@ -14,3 +14,12 @@ METRIC_NAME_TO_CLASS = {
     MetricName.TIME: Time,
     MetricName.SCORE: Score
 }
+
+
+def get_metrics_from_config(metrics_config):
+    metrics = []
+    for metric in metrics_config:
+        metric_class = METRIC_NAME_TO_CLASS[MetricName(metric.name)]
+        metrics_args = metric.get("metric_params", {})
+        metrics.append(metric_class(**metrics_args))
+    return metrics
