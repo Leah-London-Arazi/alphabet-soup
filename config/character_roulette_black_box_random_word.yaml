@@ -12,12 +12,14 @@ defaults:
       target_classes: [0, 2]
     - name: martin-ha/toxic-comment-model
       target_classes: [1]
-  targeted: True
-  confidence_threshold: 0.9
-  query_budget: 500
-  initial_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
+  attack_recipe:
+    attack_name: character_roulette_black_box_random_word
+    confidence_threshold: 0.9
+    query_budget: 750
+    targeted: True
   num_repetitions: 100
 
 experiments:
-  - attack_name: character_roulette_black_box_random_word
-    rand_init_text: True
+  - name: character_roulette_black_box_random_word_rand_init
+  - name: character_roulette_black_box_random_word
+    input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
