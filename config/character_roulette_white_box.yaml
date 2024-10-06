@@ -21,5 +21,3 @@ defaults:
 
 experiments:
   - name: character_roulette_white_box_rand_init
-  - name: character_roulette_white_box
-    input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
