@@ -16,6 +16,8 @@ defaults:
     confidence_threshold: 0.9
     query_budget: 1000
     targeted: True
+    attack_params:
+      score_threshold: 0.5
   num_repetitions: 100
 
 
