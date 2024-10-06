@@ -1,0 +1,32 @@
+metrics:
+  - name: entropy
+  - name: perplexity
+  - name: queries
+  - name: success_rate
+  - name: time
+  - name: score
+
+
+
+defaults:
+  models:
+    - name: cardiffnlp/twitter-roberta-base-sentiment-latest
+      target_classes: [0, 2]
+  attack_recipe:
+    attack_name: pez
+    confidence_threshold: 0.9
+    query_budget: 1000
+    targeted: True
+  num_repetitions: 100
+
+
+experiments:
+  - name: pez_bounded_by_random_tokens_rand_init
+    attack_params:
+      filter_token_ids_method: by_random_tokens
+      num_random_tokens: 50
+  - name: pez_bounded_by_random_tokens
+    input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
+    attack_params:
+      filter_token_ids_method: by_random_tokens
+      num_random_tokens: 50
