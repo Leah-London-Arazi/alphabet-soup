@@ -6,20 +6,28 @@ metrics:
   - name: time
   - name: score
 
+
 defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest
       target_classes: [0, 2]
-    - name: martin-ha/toxic-comment-model
-      target_classes: [1]
   attack_recipe:
-    attack_name: character_roulette_black_box_random_char
+    attack_name: gcg
     confidence_threshold: 0.9
-    query_budget: 750
+    query_budget: 1000
     targeted: True
+    attack_params:
+      score_threshold: 0.5
   num_repetitions: 100
 
+
 experiments:
-  - name: character_roulette_black_box_random_char_rand_init
-  - name: character_roulette_black_box_random_char
+  - name: gcg_bounded_by_target_class_rand_init
+    attack_recipe:
+      attack_params:
+        filter_token_ids_method: by_target_class
+  - name: gcg_bounded_by_target_class
     input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
+    attack_recipe:
+      attack_params:
+        filter_token_ids_method: by_target_class
