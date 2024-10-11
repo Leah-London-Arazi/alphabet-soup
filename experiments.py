@@ -1,3 +1,5 @@
+from omegaconf.errors import ConfigKeyError
+
 from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time, \
     get_escaped_model_name
 
@@ -39,7 +41,12 @@ def run_experiments(config_file):
         experiment_args = OmegaConf.merge(config.defaults, experiment_config)
 
         for model in experiment_args.models:
-            for target_class in OmegaConf.merge(model, experiment_args).target_classes:
+            try:
+                target_classes = OmegaConf.merge(model, experiment_args).target_classes
+            except ConfigKeyError:
+                target_classes = [0]
+
+            for target_class in target_classes:
                 experiment_name = experiment_args.name
                 attack_recipe_args = experiment_args.attack_recipe
                 attack_recipe_args.model_name = model.name
