@@ -1,21 +1,15 @@
 from omegaconf.errors import ConfigKeyError
 
-from utils.utils import set_random_seed, random_sentence, disable_warnings, init_logger, create_dir, get_current_time, \
-    get_escaped_model_name
+from utils.utils import set_random_seed, disable_warnings, init_logger, create_dir, get_current_time
 
 disable_warnings()
 set_random_seed()
 
-import numpy as np
-from textattack.datasets import HuggingFaceDataset
-import gc
 import argparse
 import os.path
-import traceback
-from tqdm import trange
 from omegaconf import OmegaConf
 from experiment.experiment import Experiment
-from utils.recipes import get_attack_recipe_from_args, run_attack
+from utils.recipes import get_attack_recipe_from_args
 from utils.utils import get_logger
 
 METRICS_RESULTS_DIR_NAME = "metrics_results"
