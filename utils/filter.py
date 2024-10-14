@@ -157,7 +157,7 @@ def get_filtered_token_ids_by_glove_score(tokenizer, word_refs, score_threshold)
                               padding=True,
                               truncation=True).input_ids.flatten()
 
-    return torch.tensor(token_ids, device=ta_device)
+    return torch.tensor(token_ids, device=ta_device).unique()
 
 
 def get_random_tokens(tokenizer, num_tokens, device="cpu"):
@@ -199,7 +199,7 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
 
     else:
         logger.debug(f"{len(token_ids)} tokens remaining after filtering")
-        logger.debug(f"The following tokens remained: {tokenizer.batch_decode([token_ids], skip_special_tokens=True)}")
+        logger.debug(f"The following tokens remained: {tokenizer.batch_decode(token_ids.unsqueeze(1), skip_special_tokens=True)}")
 
     return token_ids
 
