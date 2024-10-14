@@ -3,9 +3,8 @@ from textattack.metrics import Metric
 
 
 class Queries(Metric):
-    def __init__(self, include_skipped_results=False):
+    def __init__(self):
         self.all_metrics = {}
-        self.include_skipped_results = include_skipped_results
 
 
     def calculate(self, results):
@@ -14,9 +13,7 @@ class Queries(Metric):
         for result in results:
             if isinstance(result, SuccessfulAttackResult):
                 succeeded_attack_queries.append(result.num_queries)
-            if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
-                continue
-            if isinstance(result, FailedAttackResult):
+            if isinstance(result, (SkippedAttackResult, FailedAttackResult)):
                 continue
 
         if len(succeeded_attack_queries) > 0:
