@@ -4,24 +4,28 @@ from textattack.metrics import Metric
 
 
 class Entropy(Metric):
-    def __init__(self, include_skipped_results=False):
+    def __init__(self):
         self.all_metrics = {}
-        self.include_skipped_results = include_skipped_results
 
     def calculate(self, results):
-        entropy_results = []
+        successful_entropy_results = []
+        skipped_entropy_results = []
         for result in results:
             if isinstance(result, FailedAttackResult):
                 continue
-            if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
-                continue
+            if isinstance(result, SkippedAttackResult):
+                skipped_entropy_results.append(
+                    Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
+                )
             if isinstance(result, SuccessfulAttackResult):
-                entropy_results.append(
+                successful_entropy_results.append(
                     Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
                 )
 
-        if len(entropy_results) > 0:
-            self.all_metrics["avg_attack_entropy"] = sum(entropy_results) / len(entropy_results)
+        if len(successful_entropy_results) > 0:
+            self.all_metrics["avg_attack_entropy"] = sum(successful_entropy_results) / len(successful_entropy_results)
+        if len(skipped_entropy_results) > 0:
+            self.all_metrics["avg_skipped_attack_entropy"] = sum(skipped_entropy_results) / len(skipped_entropy_results)
 
         return self.all_metrics
 
