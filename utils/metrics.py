@@ -1,5 +1,6 @@
 from consts import MetricName
-from textattack.metrics import Perplexity, AttackSuccessRate
+from textattack.metrics import AttackSuccessRate
+from metrics.perplexity import Perplexity
 from metrics.entropy import Entropy
 from metrics.score import Score
 from metrics.time import Time
