@@ -9,7 +9,6 @@ class Queries(Metric):
 
     def calculate(self, results):
         succeeded_attack_queries = []
-        skipped_attack_queries = []
 
         for result in results:
             if isinstance(result, SuccessfulAttackResult):
