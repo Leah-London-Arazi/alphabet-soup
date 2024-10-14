@@ -43,8 +43,12 @@ def get_attack_recipe_from_args(args, from_command_line=False):
     else:
         attack_params = attack_params_cls(**args.get('attack_params', {}))
 
+    targeted = True
+    if hasattr(args, 'targeted'):
+        targeted = args.targeted
+
     attack_recipe = attack_recipe_cls(model_name=args.model_name,
-                                      targeted=args.targeted,
+                                      targeted=targeted,
                                       target_class=args.target_class,
                                       confidence_threshold=args.confidence_threshold,
                                       query_budget=args.query_budget,
