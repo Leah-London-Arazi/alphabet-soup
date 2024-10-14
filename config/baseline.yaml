@@ -3,6 +3,8 @@ metrics:
     metric_params:
       include_skipped_results: True
   - name: perplexity
+    metric_params:
+      include_skipped_results: True
   - name: entropy
     metric_params:
       include_skipped_results: True

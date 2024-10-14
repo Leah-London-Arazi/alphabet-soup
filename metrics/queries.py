@@ -14,9 +14,9 @@ class Queries(Metric):
         for result in results:
             if isinstance(result, SuccessfulAttackResult):
                 succeeded_attack_queries.append(result.num_queries)
-            if isinstance(result, FailedAttackResult):
-                continue
             if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
+                continue
+            if isinstance(result, FailedAttackResult):
                 continue
 
         if len(succeeded_attack_queries) > 0:

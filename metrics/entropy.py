@@ -9,19 +9,26 @@ class Entropy(Metric):
         self.include_skipped_results = include_skipped_results
 
     def calculate(self, results):
-        entropy_results = []
+        succeeded_entropy_results = []
+        skipped_entropy_results = []
+
         for result in results:
             if isinstance(result, FailedAttackResult):
                 continue
             if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
-                continue
+                skipped_entropy_results.append(
+                    Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
+                )
             if isinstance(result, SuccessfulAttackResult):
-                entropy_results.append(
+                succeeded_entropy_results.append(
                     Entropy.char_level_entropy(result.perturbed_result.attacked_text.text)
                 )
 
-        if len(entropy_results) > 0:
-            self.all_metrics["avg_attack_entropy"] = sum(entropy_results) / len(entropy_results)
+        if len(succeeded_entropy_results) > 0:
+            self.all_metrics["avg_attack_entropy"] = sum(succeeded_entropy_results) / len(succeeded_entropy_results)
+
+        if len(skipped_entropy_results) > 0:
+            self.all_metrics["avg_attack_entropy"] = sum(succeeded_entropy_results) / len(succeeded_entropy_results)
 
         return self.all_metrics
 
