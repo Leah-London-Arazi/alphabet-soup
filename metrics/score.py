@@ -3,9 +3,8 @@ from textattack.metrics import Metric
 import numpy as np
 
 class Score(Metric):
-    def __init__(self, include_skipped_results=False):
+    def __init__(self):
         self.all_metrics = {}
-        self.include_skipped_results = include_skipped_results
 
 
     def calculate(self, results):
@@ -23,7 +22,7 @@ class Score(Metric):
                 failed_attack_score.append(result.perturbed_result.score)
                 failed_attack_classified_as.append(result.perturbed_result.output)
 
-            if isinstance(result, SkippedAttackResult) and not self.include_skipped_results:
+            if isinstance(result, SkippedAttackResult):
                 skipped_attack_score.append(result.perturbed_result.score)
                 skipped_attack_classified_as.append(result.perturbed_result.output)
 

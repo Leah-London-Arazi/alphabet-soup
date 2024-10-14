@@ -1,8 +1,6 @@
 metrics:
   - name: score
   - name: perplexity
-    metric_params:
-      include_skipped_results: True
   - name: entropy
 
 defaults:
