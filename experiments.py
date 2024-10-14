@@ -1,4 +1,4 @@
-from omegaconf.errors import ConfigKeyError
+from omegaconf.errors import ConfigAttributeError
 
 from utils.utils import set_random_seed, disable_warnings, init_logger, create_dir, get_current_time
 
@@ -37,7 +37,7 @@ def run_experiments(config_file):
         for model in experiment_args.models:
             try:
                 target_classes = OmegaConf.merge(model, experiment_args).target_classes
-            except ConfigKeyError:
+            except ConfigAttributeError:
                 target_classes = [0]
 
             for target_class in target_classes:

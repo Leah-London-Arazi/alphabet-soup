@@ -8,7 +8,7 @@ metrics:
       include_skipped_results: True
 
 defaults:
-  attack_params:
+  attack_recipe:
     targeted: False
     confidence_threshold: 0
     query_budget: 1
