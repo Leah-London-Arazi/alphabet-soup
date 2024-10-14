@@ -22,10 +22,8 @@ def get_parser():
                         help="HuggingFace model name")
     parser.add_argument("--input-text", type=str, default=random_sentence(),
                         help="Initial attacked text, the default is a random sentence")
-    parser.add_argument("--targeted", type=bool, default=True,
-                        help="Is targeted attack")
     parser.add_argument("--target-class", type=int, default=0,
-                        help="Attacked class in targeted mode")
+                        help="Attacked class")
     parser.add_argument("--query-budget", type=int, default=500,
                         help="Maximal queries allowed to the model")
     parser.add_argument("--log-level", type=str, default="INFO",

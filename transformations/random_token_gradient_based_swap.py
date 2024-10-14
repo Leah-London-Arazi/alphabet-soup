@@ -37,12 +37,9 @@ class RandomTokenGradientBasedSwap(Transformation):
                                         padding=True,
                                         truncation=True).input_ids.to(device=ta_device)
         num_tokens_in_text = self.input_ids.shape[1]
-        if self.target_class is not None:
-            grad_output = get_grad_wrt_func(model_wrapper=self.model_wrapper,
-                                            input_ids=self.input_ids,
-                                            label=self.target_class)
-        else:
-            grad_output = self.model_wrapper.get_grad(attacked_text.tokenizer_input)
+        grad_output = get_grad_wrt_func(model_wrapper=self.model_wrapper,
+                                        input_ids=self.input_ids,
+                                        label=self.target_class)
         emb_grad = grad_output["gradient"].clone().detach().to(device=ta_device)
 
         # grad differences between all tokens and original tokens
@@ -54,7 +51,8 @@ class RandomTokenGradientBasedSwap(Transformation):
             diffs[token_pos_in_text] = b_grads - a_grad
 
         # Find best indices within 2-d tensor by flattening.
-        token_idxs_sorted_by_grad = (-diffs).flatten().argsort()
+        # argsort() is an ascending order, we want to decrease the loss, hence take the smallest change
+        token_idxs_sorted_by_grad = diffs.flatten().argsort()
 
         candidates = []
         for idx in token_idxs_sorted_by_grad.tolist()[:self.top_n]:

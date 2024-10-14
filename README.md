@@ -22,8 +22,7 @@ You can run one of our implemented attacks by executing the `main.py` file.
 - `--confidence-threshold`: The minimum confidence threshold for an attack to be considered successful. Default is `0.9`.
 - `--model-name`: The HuggingFace model to use. Default is `"cardiffnlp/twitter-roberta-base-sentiment-latest"`.
 - `--input-text`: The initial text. If no text is provided, a random sentence with 20 words will be used.
-- `--targeted`: Boolean flag to indicate if the attack is targeted. Default is `True`.
-- `--target-class`: The class to attack in targeted mode. Default is `0`.
+- `--target-class`: The class to attack. Default is `0`.
 - `--query-budget`: Maximum number of model queries allowed during the attack. Default is `500`.
 - `--log-level`: Logging verbosity. Default is `INFO`.
 - `--attack-params key=value [key=value ...]`: Additional attack parameters as key-value pairs. For lists, use comma-separated strings.
