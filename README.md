@@ -1,6 +1,9 @@
-# alphabet-soup
-Generating high confidence fooling inputs for NLP models.
+# AlphabetSoup: Generating High Confidence Fooling Texts for NLP Models
+Language Models are integrated into increasingly sensitive systems, and thus the motivation for attacking them is growing. Most attacks use adversarial examples, which involve slight modifications of the original input to alter the model's output. In this project, we describe a different approach, finding "fooling texts", which are random-looking texts that are classified with high confidence.
 
+We propose two attack methodologies: *Random Chaos* and *Patterned Chaos*. The former generates unstructured, random prompts, while the latter produces structured, yet incoherent text. Together, these methodologies include a total of four attacks: *Character Roulette* replaces individual characters or words in both white-box and black-box settings. *Unbounded Drift* employs recent gradient-based optimization methods. *Syntactic Sabotage* generates prompts with some syntactic structure, and *Meaning Masquerade* produces prompts from a vocabulary of semantically related words.
+
+Our results demonstrate that "fooling texts" can be efficiently generated using all of our attacks, even in black-box setting, with partial success. Our more successful attack, Unbounded Drift, achieves close to 100% success rate, and generates nonsensical texts that perplex the strong GPT-2 model more than random text. The Patterned Chaos attacks are also very successful, most of which achieve high accuracy scores with a very limited set of tokens.
 
 ## Installation
 Make sure you have python installed with version `>=3.11`. Using conda:
