@@ -6,7 +6,6 @@ metrics:
   - name: time
   - name: score
 
-
 defaults:
   attack_recipe:
     attack_name: pez
@@ -15,7 +14,6 @@ defaults:
     targeted: True
   num_repetitions: 100
   input_text: "aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa"
-
 
 experiments:
   - name: pez_bounded_by_glove_score_happy

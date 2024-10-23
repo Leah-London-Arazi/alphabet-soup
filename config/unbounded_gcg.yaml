@@ -19,7 +19,6 @@ defaults:
     targeted: True
   num_repetitions: 100
 
-
 experiments:
   - name: gcg_unbounded_rand_init
   - name: gcg_unbounded

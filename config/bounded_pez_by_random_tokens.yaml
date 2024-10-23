@@ -6,8 +6,6 @@ metrics:
   - name: time
   - name: score
 
-
-
 defaults:
   models:
     - name: cardiffnlp/twitter-roberta-base-sentiment-latest
@@ -21,7 +19,6 @@ defaults:
       filter_token_ids_method: by_random_tokens
       num_random_tokens: 50
   num_repetitions: 100
-
 
 experiments:
   - name: pez_bounded_by_random_tokens_rand_init
