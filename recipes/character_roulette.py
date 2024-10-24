@@ -27,6 +27,7 @@ class CharacterRouletteBlackBoxRandomChar(CharacterRouletteBlackBox):
                 WordSwapRandomCharacterSubstitution(),
                 WordSwapRandomCharacterDeletion(),
                 WordSwapRandomCharacterInsertion(),
+                WordSwapNeighboringCharacterSwap()
             ]
         )
 
