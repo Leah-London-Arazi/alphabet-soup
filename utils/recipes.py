@@ -55,7 +55,6 @@ def get_attack_recipe_from_args(args, from_command_line=False):
                                       attack_params=attack_params)
     return attack_recipe
 
-
 def run_attack(attack, input_text, label=1):
     start = timer()
     attack_result = attack.attack(input_text, label)

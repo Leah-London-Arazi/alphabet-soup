@@ -202,4 +202,3 @@ def get_filtered_token_ids(filter_method: FilterTokenIDsMethod, model, tokenizer
         logger.debug(f"The following tokens remained: {tokenizer.batch_decode(token_ids.unsqueeze(1), skip_special_tokens=True)}")
 
     return token_ids
-

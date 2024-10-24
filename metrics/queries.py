@@ -6,7 +6,6 @@ class Queries(Metric):
     def __init__(self):
         self.all_metrics = {}
 
-
     def calculate(self, results):
         succeeded_attack_queries = []
 

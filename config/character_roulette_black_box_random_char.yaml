@@ -16,7 +16,7 @@ defaults:
     attack_name: character_roulette_black_box_random_char
     confidence_threshold: 0.9
     query_budget: 750
-    c: True
+    targeted: True
   num_repetitions: 100
 
 experiments:

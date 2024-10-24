@@ -104,11 +104,9 @@ class PEZGradientSearch(SearchMethod):
 
         return cur_result
 
-
     @property
     def is_black_box(self):
         return False
-
 
     def _nn_project(self, prompt_embeds, embedding_matrix):
         with torch.no_grad():

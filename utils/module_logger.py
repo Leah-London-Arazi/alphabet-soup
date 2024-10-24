@@ -34,7 +34,6 @@ num_queries: {result.num_queries}"""
                                f"Perturbed text: {attack_result.perturbed_text()}",
                                f"used {attack_result.perturbed_result.num_queries} queries."]))
 
-
     def process(self, msg, kwargs):
         if 'extra' not in kwargs:
             kwargs['extra'] = self.extra
