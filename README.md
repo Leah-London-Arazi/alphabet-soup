@@ -30,9 +30,16 @@ You can run one of our implemented attacks by executing the `main.py` file.
 - `--log-level`: Logging verbosity. Default is `INFO`.
 - `--attack-params key=value [key=value ...]`: Additional attack parameters as key-value pairs. For lists, use comma-separated strings.
 
+## Running an Experiment
+You can run every one of the experiments we conducted by executing the `experiments.py` file.
+
+
+### Arguments
+- `--config-file` (required): A configuration file path (under `config` directory).
+- `--log-level`: Logging verbosity. Default is `INFO`.
 
 ## Attacks and Attack Parameters
-Our attacks are implemented using the TextAttack framework, and are defined by a combination of a goal function, constraints, a search method and transformations. For more details check out https://github.com/QData/TextAttack.
+Our attacks are implemented using the TextAttack framework, and are defined by a combination of a goal function, constraints, a search method and transformations. For more details check out [TextAttack](https://github.com/QData/TextAttack).
 Each attack has additional parameters to control its behavior. Below is an explanation of the parameters for each attack type.
 
 ### Random Chaos
