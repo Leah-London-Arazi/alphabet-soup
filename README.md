@@ -5,6 +5,9 @@ We propose two attack methodologies: *Random Chaos* and *Patterned Chaos*. The f
 
 Our results demonstrate that "fooling texts" can be efficiently generated using all of our attacks, even in black-box setting, with partial success. Our more successful attack, Unbounded Drift, achieves close to 100% success rate, and generates nonsensical texts that perplex the strong GPT-2 model more than random text. The Patterned Chaos attacks are also very successful, most of which achieve high accuracy scores with a very limited set of tokens.
 
+## Report
+You can view our report describing the experiments and the results [here](./REPORT.pdf).
+
 ## Installation
 Make sure you have python installed with version `>=3.11`. Using conda:
 ```shell
